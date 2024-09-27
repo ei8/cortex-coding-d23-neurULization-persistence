@@ -11,22 +11,28 @@ using System.Threading.Tasks;
 
 namespace ei8.Cortex.Coding.d23.neurULization.Persistence
 {
-    public static class neurULizerExtensions
+    public class neurULizer : IneurULizer
     {
-        public static async Task<Ensemble> neurULizeAsync<TValue>(
-            this IneurULizer neurULizer, 
+        private readonly neurULizerOptions options;
+
+        public neurULizer(IneurULizerOptions options)
+        {
+            AssertionConcern.AssertArgumentNotNull(options, nameof(options));
+
+            this.options = (neurULizerOptions) options;
+        }
+
+        public async Task<Ensemble> neurULizeAsync<TValue>(
             TValue value, 
-            IEnsembleRepository ensembleRepository, 
-            Processors.Writers.IInstanceProcessor instanceProcessor, 
-            IDictionary<string, Ensemble> ensembleCache,
-            string appUserId,
-            string cortexLibraryOutBaseUrl,
-            int queryResultLimit,
             string userId
         )
         {
             AssertionConcern.AssertArgumentNotNull(value, nameof(value));
-            AssertionConcern.AssertArgumentNotNull(instanceProcessor, nameof(instanceProcessor));
+            AssertionConcern.AssertArgumentNotEmpty(
+                userId, 
+                "Value cannot be null or empty.", 
+                nameof(userId)
+            );
 
             var result = new Ensemble();
 
@@ -45,9 +51,9 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                 .Distinct();
 
             // use key to retrieve external reference url from library
-            var externalReferences = await ensembleRepository.GetExternalReferencesAsync(
-                appUserId,
-                cortexLibraryOutBaseUrl,
+            var externalReferences = await this.options.EnsembleRepository.GetExternalReferencesAsync(
+                this.options.AppUserId,
+                this.options.CortexLibraryOutBaseUrl,
                 new string[] {
                     valueClassKey
                 }.Concat(
@@ -60,7 +66,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             // Unnecessary to validate null id and tag values since another service can be
             // responsible for pruning grannies containing null or empty values.
             // Null values can also be considered as valid new values.
-            var instance = await instanceProcessor.ObtainAsync<IInstance, IInstanceProcessor, Processors.Readers.Deductive.IInstanceParameterSet>(
+            var instance = await this.options.WritersInstanceProcessor.ObtainAsync<IInstance, IInstanceProcessor, Processors.Readers.Deductive.IInstanceParameterSet>(
                     result,
                     new Processors.Readers.Deductive.InstanceParameterSet(
                         (idp = neuronProperties.OfType<IdProperty>().SingleOrDefault()) != null ?
@@ -71,14 +77,14 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                         regionId,
                         externalReferences[valueClassKey],
                         grannyProperties.Select(async gp =>
-                            await neurULizerExtensions.CreatePropertyAssociationParams(
+                            await neurULizer.CreatePropertyAssociationParams(
                                 gp, 
-                                regionId, 
-                                ensembleRepository, 
+                                regionId,
+                                this.options.EnsembleRepository, 
                                 externalReferences,
                                 userId,
-                                cortexLibraryOutBaseUrl,
-                                queryResultLimit
+                                this.options.CortexLibraryOutBaseUrl,
+                                this.options.QueryResultLimit
                             )
                         )
                             .Select(t => t.Result)
@@ -87,12 +93,12 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                     )
                 );
 
-            await ensembleRepository.UniquifyAsync(
-                appUserId,
+            await this.options.EnsembleRepository.UniquifyAsync(
+                this.options.AppUserId,
                 result,
-                cortexLibraryOutBaseUrl,
-                queryResultLimit,
-                ensembleCache
+                this.options.CortexLibraryOutBaseUrl,
+                this.options.QueryResultLimit,
+                this.options.EnsembleCache
             );
 
             return result;
@@ -128,17 +134,8 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             );
         }
 
-        public static async Task<IEnumerable<TValue>> DeneurULizeAsync<TValue>(
-            this IneurULizer neurULizer,
+        public async Task<IEnumerable<TValue>> DeneurULizeAsync<TValue>(
             Ensemble value,
-            IEnsembleRepository ensembleRepository, 
-            Processors.Readers.Inductive.IInstanceProcessor instanceProcessor,
-            IPrimitiveSet primitives,
-            IGrannyService grannyService,
-            string appUserId,
-            string identityAccessOutBaseUrl,
-            string cortexLibraryOutBaseUrl,
-            int queryResultLimit,
             string userId
         )
             where TValue : class, new()
@@ -160,10 +157,10 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                 .Distinct();
 
             // use key to retrieve external reference url from library
-            var externalReferences = await ensembleRepository
+            var externalReferences = await this.options.EnsembleRepository
                 .GetExternalReferencesAsync(
                     userId,
-                    cortexLibraryOutBaseUrl,
+                    this.options.CortexLibraryOutBaseUrl,
                     (new string[] {
                         valueClassKey
                     }).Concat(
@@ -172,23 +169,23 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                 );
 
             // TODO: use GrannyCacheService
-            var instantiatesClassResult = await grannyService.TryObtainPersistAsync<
+            var instantiatesClassResult = await this.options.GrannyService.TryObtainPersistAsync<
                 IInstantiatesClass,
                 Coding.d23.neurULization.Processors.Readers.Deductive.IInstantiatesClassProcessor,
                 Coding.d23.neurULization.Processors.Readers.Deductive.IInstantiatesClassParameterSet,
                 Coding.d23.neurULization.Processors.Writers.IInstantiatesClassProcessor
             >(
                 new Coding.d23.neurULization.Processors.Readers.Deductive.InstantiatesClassParameterSet(
-                    await ensembleRepository.GetExternalReferenceAsync(
-                        appUserId,
-                        cortexLibraryOutBaseUrl,
+                    await this.options.EnsembleRepository.GetExternalReferenceAsync(
+                        this.options.AppUserId,
+                        this.options.CortexLibraryOutBaseUrl,
                         typeof(TValue)
                     )
                 ),
-                appUserId,
-                identityAccessOutBaseUrl,
-                cortexLibraryOutBaseUrl,
-                queryResultLimit
+                this.options.AppUserId,
+                this.options.IdentityAccessOutBaseUrl,
+                this.options.CortexLibraryOutBaseUrl,
+                this.options.QueryResultLimit
                 // TODO: add support for CancellationToken
             );
 
@@ -201,7 +198,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
 
             foreach (var instanceNeuron in instanceNeurons)
             {
-                if (instanceProcessor.TryParse(
+                if (this.options.ReadersInductiveInstanceProcessor.TryParse(
                     value,
                     new Processors.Readers.Inductive.InstanceParameterSet(
                         instanceNeuron,
@@ -223,7 +220,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                         var propAssoc = instance.PropertyAssociations.SingleOrDefault(
                             pa => pa.PropertyAssignment.Expression.Units
                                 .AsEnumerable()
-                                .GetValueUnitGranniesByTypeId(primitives.Unit.Id).SingleOrDefault().Value.Id == externalReferences[gp.Key].Id
+                                .GetValueUnitGranniesByTypeId(this.options.Primitives.Unit.Id).SingleOrDefault().Value.Id == externalReferences[gp.Key].Id
                         );
                         object propValue = null;
 
