@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 
 namespace ei8.Cortex.Coding.d23.neurULization.Persistence
 {
-    public static class ExtensionMethods
+    public static class ProcessorExtensions
     {
         public static async Task<TGranny> GetGranny<TGranny, TDeductiveReaderProcessor, TParameterSet>(
-            this TDeductiveReaderProcessor icProc,
+            this TDeductiveReaderProcessor processor,
             IEnsembleRepository ensembleRepository,
             TParameterSet parameters,
             string userId,
@@ -19,7 +19,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             where TDeductiveReaderProcessor : Coding.d23.neurULization.Processors.Readers.Deductive.IGrannyReadProcessor<TGranny, TParameterSet>
             where TParameterSet : Coding.d23.neurULization.Processors.Readers.Deductive.IDeductiveParameterSet
         {
-            var icPqs = icProc.GetQueries(parameters);
+            var icPqs = processor.GetQueries(parameters);
             var ensemble = new Ensemble();
             await icPqs.Process(
                 ensembleRepository,
@@ -30,7 +30,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                 queryResultLimit
             );
 
-            icProc.TryParse(
+            processor.TryParse(
                 ensemble,
                 parameters,
                 out TGranny granny

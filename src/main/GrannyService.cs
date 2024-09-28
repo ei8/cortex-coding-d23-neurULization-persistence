@@ -110,7 +110,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                             appUserGuid = avr.UserNeuronId;
                     }
 
-                    if (appUserGuid != null)
+                    if (appUserGuid.HasValue)
                     {
                         await this.ensembleRepository.UniquifyAsync(
                             appUserId,
@@ -119,11 +119,15 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                             queryResultLimit,
                             this.ensembleCache
                         );
+                        await this.transaction.BeginAsync(appUserGuid.Value);
+
                         await this.ensembleTransactionService.SaveAsync(
-                            transaction,
+                            this.transaction,
                             instantiatesAvatarEnsemble,
                             appUserGuid.Value
                         );
+
+                        await this.transaction.CommitAsync();
                         result = true;
                     }
                 }
