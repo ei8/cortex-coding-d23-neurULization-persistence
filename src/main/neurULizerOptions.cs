@@ -4,8 +4,11 @@ using System.Collections.Generic;
 
 namespace ei8.Cortex.Coding.d23.neurULization.Persistence
 {
-    public class neurULizerOptions : IneurULizerOptions
+    public class neurULizerOptions : Id23neurULizerOptions
     {
+        // TODO: see if possible to remove ensembleRepository, 
+        // if so, neurULizer can be returned to d23.neurULization
+        // and thus make it persistence unaware
         private readonly IEnsembleRepository ensembleRepository;
         private readonly IInstanceProcessor writersInstanceProcessor;
         private readonly Processors.Readers.Inductive.IInstanceProcessor readersInductiveInstanceProcessor;
