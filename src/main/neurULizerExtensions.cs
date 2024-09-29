@@ -50,7 +50,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                 .GetItems<Neuron>()
                 .ToDictionary(n => n.Id.ToString());
 
-            var result = await neurULizer.neurULizeAsync(
+            var result = neurULizer.neurULize(
                 value,
                 typeInfo,
                 idPropertyValueNeurons,
@@ -95,7 +95,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                 );
 
             // TODO: use GrannyCacheService
-            var instantiatesClassResult = await options.GrannyService.TryObtainPersistAsync<
+            var instantiatesClassResult = await options.GrannyService.TryGetBuildPersistAsync<
                 IInstantiatesClass,
                 Coding.d23.neurULization.Processors.Readers.Deductive.IInstantiatesClassProcessor,
                 Coding.d23.neurULization.Processors.Readers.Deductive.IInstantiatesClassParameterSet,
@@ -117,12 +117,12 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
 
             AssertionConcern.AssertStateTrue(
                 instantiatesClassResult.Item1,
-                $"'Instantiates^Avatar' is required to invoke {nameof(IneurULizer.DeneurULizeAsync)}"
+                $"'Instantiates^Avatar' is required to invoke {nameof(IneurULizer.DeneurULize)}"
             );
 
             var instanceNeurons = value.GetPresynapticNeurons(instantiatesClassResult.Item2.Neuron.Id);
 
-            return await neurULizer.DeneurULizeAsync<TValue>(
+            return neurULizer.DeneurULize<TValue>(
                 value, 
                 instanceNeurons,
                 typeInfo,
