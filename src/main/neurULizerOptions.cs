@@ -10,8 +10,8 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         // if so, neurULizer can be returned to d23.neurULization
         // and thus make it persistence unaware
         private readonly IEnsembleRepository ensembleRepository;
-        private readonly IInstanceProcessor writersInstanceProcessor;
-        private readonly Processors.Readers.Inductive.IInstanceProcessor readersInductiveInstanceProcessor;
+        private readonly IInstanceWriter instanceWriter;
+        private readonly Processors.Readers.Inductive.IInstanceReader inductiveInstanceReader;
         private readonly IPrimitiveSet primitives;
         private readonly IDictionary<string, Ensemble> ensembleCache;
         private readonly IGrannyService grannyService;
@@ -22,8 +22,8 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
 
         public neurULizerOptions(
             IEnsembleRepository ensembleRepository, 
-            Coding.d23.neurULization.Processors.Writers.IInstanceProcessor writersInstanceProcessor,
-            Coding.d23.neurULization.Processors.Readers.Inductive.IInstanceProcessor readersInductiveInstanceProcessor,
+            Coding.d23.neurULization.Processors.Writers.IInstanceWriter instanceWriter,
+            Coding.d23.neurULization.Processors.Readers.Inductive.IInstanceReader inductiveInstanceReader,
             IPrimitiveSet primitives, 
             IDictionary<string, Ensemble> ensembleCache,
             IGrannyService grannyService,
@@ -34,8 +34,8 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         )
         {
             AssertionConcern.AssertArgumentNotNull(ensembleRepository, nameof(ensembleRepository));
-            AssertionConcern.AssertArgumentNotNull(writersInstanceProcessor, nameof(writersInstanceProcessor));
-            AssertionConcern.AssertArgumentNotNull(readersInductiveInstanceProcessor, nameof(readersInductiveInstanceProcessor));
+            AssertionConcern.AssertArgumentNotNull(instanceWriter, nameof(instanceWriter));
+            AssertionConcern.AssertArgumentNotNull(inductiveInstanceReader, nameof(inductiveInstanceReader));
             AssertionConcern.AssertArgumentNotNull(primitives, nameof(primitives));
             AssertionConcern.AssertArgumentNotNull(ensembleCache, nameof(ensembleCache));
             AssertionConcern.AssertArgumentNotNull(grannyService, nameof(grannyService));
@@ -46,8 +46,8 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             AssertionConcern.AssertArgumentRange(queryResultLimit, 0, int.MaxValue, nameof(queryResultLimit));
 
             this.ensembleRepository = ensembleRepository;
-            this.writersInstanceProcessor = writersInstanceProcessor;
-            this.readersInductiveInstanceProcessor = readersInductiveInstanceProcessor;
+            this.instanceWriter = instanceWriter;
+            this.inductiveInstanceReader = inductiveInstanceReader;
             this.primitives = primitives;
             this.ensembleCache = ensembleCache;
             this.grannyService = grannyService;
@@ -59,9 +59,9 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
 
         public IEnsembleRepository EnsembleRepository => this.ensembleRepository;
 
-        public IInstanceProcessor WritersInstanceProcessor => this.writersInstanceProcessor;
+        public IInstanceWriter InstanceWriter => this.instanceWriter;
 
-        public Processors.Readers.Inductive.IInstanceProcessor ReadersInductiveInstanceProcessor => this.readersInductiveInstanceProcessor;
+        public Processors.Readers.Inductive.IInstanceReader InductiveInstanceReader => this.inductiveInstanceReader;
 
         public IPrimitiveSet Primitives => this.primitives;
 

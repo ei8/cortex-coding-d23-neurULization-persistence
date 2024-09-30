@@ -48,9 +48,9 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         // TODO: encapsulate in a GrannyCacheService with methods such as: GetInstantiatesClass<T>() etc.
         public async Task<Tuple<bool, TGranny>> TryGetBuildPersistAsync<
             TGranny, 
-            TDeductiveReaderProcessor, 
+            TDeductiveReader, 
             TParameterSet, 
-            TWriterProcessor
+            TWriter
         >(
             TParameterSet parameters,
             string appUserId,
@@ -60,11 +60,11 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             CancellationToken token = default
         )
             where TGranny : IGranny
-            where TDeductiveReaderProcessor : Coding.d23.neurULization.Processors.Readers.Deductive.IGrannyReadProcessor<TGranny, TParameterSet>
+            where TDeductiveReader : Coding.d23.neurULization.Processors.Readers.Deductive.IGrannyReader<TGranny, TParameterSet>
             where TParameterSet : Coding.d23.neurULization.Processors.Readers.Deductive.IDeductiveParameterSet
-            where TWriterProcessor : Cortex.Coding.d23.neurULization.Processors.Writers.IGrannyWriteProcessor<TGranny, TParameterSet>
+            where TWriter : Cortex.Coding.d23.neurULization.Processors.Writers.IGrannyWriter<TGranny, TParameterSet>
         {
-            var tryGetGrannyResult = await this.TryGetGrannyAsync<TGranny, TDeductiveReaderProcessor, TParameterSet>(
+            var tryGetGrannyResult = await this.TryGetGrannyAsync<TGranny, TDeductiveReader, TParameterSet>(
                 parameters, 
                 appUserId, 
                 cortexLibraryOutBaseUrl, 
@@ -77,9 +77,9 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             if (!boolResult)
             {
                 var instantiatesAvatarEnsemble = new Ensemble();
-                grannyResult = this.serviceProvider.GetRequiredService<TWriterProcessor>().ParseBuild<
+                grannyResult = this.serviceProvider.GetRequiredService<TWriter>().ParseBuild<
                     TGranny,
-                    TWriterProcessor,
+                    TWriter,
                     TParameterSet
                 >(
                     instantiatesAvatarEnsemble,
@@ -133,14 +133,14 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             return Tuple.Create(boolResult, grannyResult);
         }
 
-        public async Task<Tuple<bool, TGranny>> TryGetGrannyAsync<TGranny, TDeductiveReaderProcessor, TParameterSet>(TParameterSet parameters, string appUserId, string cortexLibraryOutBaseUrl, int queryResultLimit)
+        public async Task<Tuple<bool, TGranny>> TryGetGrannyAsync<TGranny, TDeductiveReader, TParameterSet>(TParameterSet parameters, string appUserId, string cortexLibraryOutBaseUrl, int queryResultLimit)
             where TGranny : IGranny
-            where TDeductiveReaderProcessor : Processors.Readers.Deductive.IGrannyReadProcessor<TGranny, TParameterSet>
+            where TDeductiveReader : Processors.Readers.Deductive.IGrannyReader<TGranny, TParameterSet>
             where TParameterSet : Processors.Readers.Deductive.IDeductiveParameterSet
         {
-            return await this.serviceProvider.GetRequiredService<TDeductiveReaderProcessor>().TryGetGrannyAsync<
+            return await this.serviceProvider.GetRequiredService<TDeductiveReader>().TryGetGrannyAsync<
                 TGranny,
-                TDeductiveReaderProcessor,
+                TDeductiveReader,
                 TParameterSet
             >(
                 this.ensembleRepository,

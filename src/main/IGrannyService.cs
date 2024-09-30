@@ -9,9 +9,9 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
     {
         Task<Tuple<bool, TGranny>> TryGetBuildPersistAsync<
             TGranny,
-            TDeductiveReaderProcessor,
+            TDeductiveReader,
             TParameterSet,
-            TWriterProcessor
+            TWriter
         >(
             TParameterSet parameters,
             string appUserId,
@@ -21,13 +21,13 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             CancellationToken token = default
         )
             where TGranny : IGranny
-            where TDeductiveReaderProcessor : Coding.d23.neurULization.Processors.Readers.Deductive.IGrannyReadProcessor<TGranny, TParameterSet>
+            where TDeductiveReader : Coding.d23.neurULization.Processors.Readers.Deductive.IGrannyReader<TGranny, TParameterSet>
             where TParameterSet : Coding.d23.neurULization.Processors.Readers.Deductive.IDeductiveParameterSet
-            where TWriterProcessor : Cortex.Coding.d23.neurULization.Processors.Writers.IGrannyWriteProcessor<TGranny, TParameterSet>;
+            where TWriter : Cortex.Coding.d23.neurULization.Processors.Writers.IGrannyWriter<TGranny, TParameterSet>;
 
-        Task<Tuple<bool, TGranny>> TryGetGrannyAsync<TGranny, TDeductiveReaderProcessor, TParameterSet>(TParameterSet parameters, string appUserId, string cortexLibraryOutBaseUrl, int queryResultLimit)
+        Task<Tuple<bool, TGranny>> TryGetGrannyAsync<TGranny, TDeductiveReader, TParameterSet>(TParameterSet parameters, string appUserId, string cortexLibraryOutBaseUrl, int queryResultLimit)
             where TGranny : IGranny
-            where TDeductiveReaderProcessor : Processors.Readers.Deductive.IGrannyReadProcessor<TGranny, TParameterSet>
+            where TDeductiveReader : Processors.Readers.Deductive.IGrannyReader<TGranny, TParameterSet>
             where TParameterSet : Processors.Readers.Deductive.IDeductiveParameterSet;
 }
 }

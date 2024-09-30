@@ -8,8 +8,8 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
 {
     public static class ProcessorExtensions
     {
-        public static async Task<Tuple<bool, TGranny>> TryGetGrannyAsync<TGranny, TDeductiveReaderProcessor, TParameterSet>(
-            this TDeductiveReaderProcessor processor,
+        public static async Task<Tuple<bool, TGranny>> TryGetGrannyAsync<TGranny, TDeductiveReader, TParameterSet>(
+            this TDeductiveReader processor,
             IEnsembleRepository ensembleRepository,
             TParameterSet parameters,
             string userId,
@@ -17,7 +17,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             int queryResultLimit
         )
             where TGranny : IGranny
-            where TDeductiveReaderProcessor : Coding.d23.neurULization.Processors.Readers.Deductive.IGrannyReadProcessor<TGranny, TParameterSet>
+            where TDeductiveReader : Coding.d23.neurULization.Processors.Readers.Deductive.IGrannyReader<TGranny, TParameterSet>
             where TParameterSet : Coding.d23.neurULization.Processors.Readers.Deductive.IDeductiveParameterSet
         {
             var icPqs = processor.GetQueries(parameters);
