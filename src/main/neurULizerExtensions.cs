@@ -95,17 +95,14 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                 );
 
             // TODO: use GrannyCacheService
-            var instantiatesClassResult = await options.GrannyService.TryGetBuildPersistAsync<
-                IInstantiatesClass,
-                Coding.d23.neurULization.Processors.Readers.Deductive.IInstantiatesClassReader,
-                Coding.d23.neurULization.Processors.Readers.Deductive.IInstantiatesClassParameterSet,
-                Coding.d23.neurULization.Processors.Writers.IInstantiatesClassWriter
-            >(
-                new Coding.d23.neurULization.Processors.Readers.Deductive.InstantiatesClassParameterSet(
-                    await options.EnsembleRepository.GetExternalReferenceAsync(
-                        options.AppUserId,
-                        options.CortexLibraryOutBaseUrl,
-                        typeof(TValue)
+            var instantiatesClassResult = await options.GrannyService.TryGetBuildPersistAsync(
+                new InstantiatesClassGrannyInfo(
+                    new Coding.d23.neurULization.Processors.Readers.Deductive.InstantiatesClassParameterSet(
+                        await options.EnsembleRepository.GetExternalReferenceAsync(
+                            options.AppUserId,
+                            options.CortexLibraryOutBaseUrl,
+                            typeof(TValue)
+                        )
                     )
                 ),
                 options.AppUserId,

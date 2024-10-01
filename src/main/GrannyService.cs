@@ -52,7 +52,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             TParameterSet, 
             TWriter
         >(
-            TParameterSet parameters,
+            IGrannyInfo<TGranny, TDeductiveReader, TParameterSet, TWriter> grannyInfo,
             string appUserId,
             string identityAccessOutBaseUrl,
             string cortexLibraryOutBaseUrl,
@@ -64,8 +64,8 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             where TParameterSet : Coding.d23.neurULization.Processors.Readers.Deductive.IDeductiveParameterSet
             where TWriter : Cortex.Coding.d23.neurULization.Processors.Writers.IGrannyWriter<TGranny, TParameterSet>
         {
-            var tryGetGrannyResult = await this.TryGetGrannyAsync<TGranny, TDeductiveReader, TParameterSet>(
-                parameters, 
+            var tryGetGrannyResult = await this.TryGetGrannyAsync(
+                grannyInfo, 
                 appUserId, 
                 cortexLibraryOutBaseUrl, 
                 queryResultLimit
@@ -83,7 +83,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                     TParameterSet
                 >(
                     instantiatesAvatarEnsemble,
-                    parameters
+                    grannyInfo.Parameters
                 );
 
                 if (instantiatesAvatarEnsemble.AnyTransient())
@@ -133,10 +133,16 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             return Tuple.Create(boolResult, grannyResult);
         }
 
-        public async Task<Tuple<bool, TGranny>> TryGetGrannyAsync<TGranny, TDeductiveReader, TParameterSet>(TParameterSet parameters, string appUserId, string cortexLibraryOutBaseUrl, int queryResultLimit)
+        public async Task<Tuple<bool, TGranny>> TryGetGrannyAsync<TGranny, TDeductiveReader, TParameterSet, TWriter>(
+            IGrannyInfo<TGranny, TDeductiveReader, TParameterSet, TWriter> grannyInfo, 
+            string appUserId, 
+            string cortexLibraryOutBaseUrl, 
+            int queryResultLimit
+        )
             where TGranny : IGranny
             where TDeductiveReader : Processors.Readers.Deductive.IGrannyReader<TGranny, TParameterSet>
             where TParameterSet : Processors.Readers.Deductive.IDeductiveParameterSet
+            where TWriter : Cortex.Coding.d23.neurULization.Processors.Writers.IGrannyWriter<TGranny, TParameterSet>
         {
             return await this.serviceProvider.GetRequiredService<TDeductiveReader>().TryGetGrannyAsync<
                 TGranny,
@@ -144,7 +150,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                 TParameterSet
             >(
                 this.ensembleRepository,
-                parameters,
+                grannyInfo.Parameters,
                 // use appUserId since calls to this function relate to app required grannies
                 appUserId,
                 cortexLibraryOutBaseUrl,
