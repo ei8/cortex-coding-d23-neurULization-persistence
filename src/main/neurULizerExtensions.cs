@@ -30,7 +30,6 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             // use key to retrieve external reference url from library
             var externalReferences = await options.EnsembleRepository.GetExternalReferencesAsync(
                 options.AppUserId,
-                options.CortexLibraryOutBaseUrl,
                 typeInfo.Keys.ToArray()
             );
 
@@ -44,7 +43,6 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                     {
                         Id = valueNeuronIds
                     },
-                    options.CortexLibraryOutBaseUrl,
                     int.MaxValue
                 ))
                 .GetItems<Neuron>()
@@ -60,8 +58,6 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             await options.EnsembleRepository.UniquifyAsync(
                 options.AppUserId,
                 result,
-                options.CortexLibraryOutBaseUrl,
-                options.QueryResultLimit,
                 options.EnsembleCache
             );
 
@@ -90,7 +86,6 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             var externalReferences = await options.EnsembleRepository
                 .GetExternalReferencesAsync(
                     userId,
-                    options.CortexLibraryOutBaseUrl,
                     typeInfo.Keys.ToArray()
                 );
 
@@ -100,15 +95,11 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                     new Coding.d23.neurULization.Processors.Readers.Deductive.InstantiatesClassParameterSet(
                         await options.EnsembleRepository.GetExternalReferenceAsync(
                             options.AppUserId,
-                            options.CortexLibraryOutBaseUrl,
                             typeof(TValue)
                         )
                     )
                 ),
-                options.AppUserId,
-                options.IdentityAccessOutBaseUrl,
-                options.CortexLibraryOutBaseUrl,
-                options.QueryResultLimit
+                options.AppUserId
             // TODO: add support for CancellationToken
             );
 

@@ -20,14 +20,12 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             IEnsembleRepository ensembleRepository,
             Guid valueId,
             string appUserId,
-            string cortexLibraryOutBaseUrl,
             string userId
         ) => new PropertyAssociationGrannyInfo(
             // TODO: create extensionmethod to create PropAssocParams from PropertyInfo and minimal parameters, place in d23.neurULization.Persistence
             new Coding.d23.neurULization.Processors.Readers.Deductive.PropertyAssociationParameterSet(
                 await ensembleRepository.GetExternalReferenceAsync(
                     appUserId,
-                    cortexLibraryOutBaseUrl + "/",
                     typeof(TAggregate).GetProperty(propertyName)
                 ),
                 (await ensembleRepository.GetByQueryAsync(
@@ -36,7 +34,6 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                     {
                         Id = new string[] { valueId.ToString() }
                     },
-                    cortexLibraryOutBaseUrl + "/",
                     int.MaxValue
                 )).GetItems<Coding.Neuron>().Single(),
                 // TODO: can't this be retrieved from the property granny as it is specified
@@ -44,7 +41,6 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                 // or, rather from the [neurULClass(typeof(Avatar))] attribute of the Message class
                 await ensembleRepository.GetExternalReferenceAsync(
                     appUserId,
-                    cortexLibraryOutBaseUrl + "/",
                     typeof(TProperty)
                 ),
                 ValueMatchBy.Id

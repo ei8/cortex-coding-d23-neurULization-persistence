@@ -16,9 +16,6 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         private readonly IDictionary<string, Ensemble> ensembleCache;
         private readonly IGrannyService grannyService;
         private readonly string appUserId;
-        private readonly string cortexLibraryOutBaseUrl;
-        private readonly string identityAccessOutBaseUrl;
-        private readonly int queryResultLimit;
 
         public neurULizerOptions(
             IEnsembleRepository ensembleRepository, 
@@ -27,10 +24,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             IPrimitiveSet primitives, 
             IDictionary<string, Ensemble> ensembleCache,
             IGrannyService grannyService,
-            string appUserId,
-            string cortexLibraryOutBaseUrl,
-            string identityAccessOutBaseUrl,
-            int queryResultLimit
+            string appUserId
         )
         {
             AssertionConcern.AssertArgumentNotNull(ensembleRepository, nameof(ensembleRepository));
@@ -41,9 +35,6 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             AssertionConcern.AssertArgumentNotNull(grannyService, nameof(grannyService));
             string emptyMessage = "Specified value cannot be null or empty.";
             AssertionConcern.AssertArgumentNotEmpty(appUserId, emptyMessage, nameof(appUserId));
-            AssertionConcern.AssertArgumentNotEmpty(cortexLibraryOutBaseUrl, emptyMessage, nameof(cortexLibraryOutBaseUrl));
-            AssertionConcern.AssertArgumentNotEmpty(identityAccessOutBaseUrl, emptyMessage, nameof(identityAccessOutBaseUrl));
-            AssertionConcern.AssertArgumentRange(queryResultLimit, 0, int.MaxValue, nameof(queryResultLimit));
 
             this.ensembleRepository = ensembleRepository;
             this.instanceWriter = instanceWriter;
@@ -52,9 +43,6 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             this.ensembleCache = ensembleCache;
             this.grannyService = grannyService;
             this.appUserId = appUserId;
-            this.cortexLibraryOutBaseUrl = cortexLibraryOutBaseUrl;
-            this.identityAccessOutBaseUrl = identityAccessOutBaseUrl;
-            this.queryResultLimit = queryResultLimit;
         }
 
         public IEnsembleRepository EnsembleRepository => this.ensembleRepository;
@@ -70,11 +58,5 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         public IGrannyService GrannyService => this.grannyService;
 
         public string AppUserId => this.appUserId;
-
-        public string CortexLibraryOutBaseUrl => this.cortexLibraryOutBaseUrl;
-
-        public string IdentityAccessOutBaseUrl => this.identityAccessOutBaseUrl;
-
-        public int QueryResultLimit => this.queryResultLimit;
     }
 }

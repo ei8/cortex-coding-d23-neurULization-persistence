@@ -21,6 +21,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         private readonly ITransaction transaction;
         private readonly IEnsembleTransactionService ensembleTransactionService;
         private readonly IValidationClient validationClient;
+        private readonly string identityAccessOutBaseUrl;
 
         public GrannyService(
             IServiceProvider serviceProvider,
@@ -28,7 +29,8 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             IDictionary<string, Ensemble> ensembleCache,
             ITransaction transaction,
             IEnsembleTransactionService ensembleTransactionService,
-            IValidationClient validationClient
+            IValidationClient validationClient,
+            string identityAccessOutBaseUrl
         )
         {
             AssertionConcern.AssertArgumentNotNull(ensembleRepository, nameof(ensembleRepository));
@@ -36,6 +38,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             AssertionConcern.AssertArgumentNotNull(transaction, nameof(transaction));
             AssertionConcern.AssertArgumentNotNull(ensembleTransactionService, nameof(ensembleTransactionService));
             AssertionConcern.AssertArgumentNotNull(validationClient, nameof(validationClient));
+            AssertionConcern.AssertArgumentNotEmpty(identityAccessOutBaseUrl, "Parameter cannot bnull or empty.", nameof(identityAccessOutBaseUrl));
 
             this.serviceProvider = serviceProvider;
             this.ensembleRepository = ensembleRepository;
@@ -43,6 +46,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             this.transaction = transaction;
             this.ensembleTransactionService = ensembleTransactionService;
             this.validationClient = validationClient;
+            this.identityAccessOutBaseUrl = identityAccessOutBaseUrl;
         }
 
         // TODO: encapsulate in a GrannyCacheService with methods such as: GetInstantiatesClass<T>() etc.
@@ -54,9 +58,6 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         >(
             IGrannyInfo<TGranny, TDeductiveReader, TParameterSet, TWriter> grannyInfo,
             string appUserId,
-            string identityAccessOutBaseUrl,
-            string cortexLibraryOutBaseUrl,
-            int queryResultLimit,
             CancellationToken token = default
         )
             where TGranny : IGranny
@@ -66,9 +67,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         {
             var tryGetGrannyResult = await this.TryGetGrannyAsync(
                 grannyInfo, 
-                appUserId, 
-                cortexLibraryOutBaseUrl, 
-                queryResultLimit
+                appUserId
             );
 
             var boolResult = tryGetGrannyResult.Item1;
@@ -110,8 +109,6 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                         await this.ensembleRepository.UniquifyAsync(
                             appUserId,
                             instantiatesAvatarEnsemble,
-                            cortexLibraryOutBaseUrl,
-                            queryResultLimit,
                             this.ensembleCache
                         );
                         await this.transaction.BeginAsync(appUserGuid.Value);
@@ -135,9 +132,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
 
         public async Task<Tuple<bool, TGranny>> TryGetGrannyAsync<TGranny, TDeductiveReader, TParameterSet, TWriter>(
             IGrannyInfo<TGranny, TDeductiveReader, TParameterSet, TWriter> grannyInfo, 
-            string appUserId, 
-            string cortexLibraryOutBaseUrl, 
-            int queryResultLimit
+            string appUserId
         )
             where TGranny : IGranny
             where TDeductiveReader : Processors.Readers.Deductive.IGrannyReader<TGranny, TParameterSet>
@@ -152,9 +147,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                 this.ensembleRepository,
                 grannyInfo.Parameters,
                 // use appUserId since calls to this function relate to app required grannies
-                appUserId,
-                cortexLibraryOutBaseUrl,
-                queryResultLimit
+                appUserId
             );
         }
     }

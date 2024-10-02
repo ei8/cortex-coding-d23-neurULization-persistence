@@ -12,9 +12,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             this TDeductiveReader processor,
             IEnsembleRepository ensembleRepository,
             TParameterSet parameters,
-            string userId,
-            string cortexLibraryOutBaseUrl, 
-            int queryResultLimit
+            string userId
         )
             where TGranny : IGranny
             where TDeductiveReader : Coding.d23.neurULization.Processors.Readers.Deductive.IGrannyReader<TGranny, TParameterSet>
@@ -28,9 +26,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                     ensembleRepository,
                     ensemble,
                     new List<IGranny>(),
-                    userId,
-                    cortexLibraryOutBaseUrl,
-                    queryResultLimit
+                    userId
                 ) && processor.TryParse(
                     ensemble,
                     parameters,
