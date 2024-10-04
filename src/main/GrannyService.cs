@@ -22,6 +22,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         private readonly IEnsembleTransactionService ensembleTransactionService;
         private readonly IValidationClient validationClient;
         private readonly string identityAccessOutBaseUrl;
+        private readonly string appUserId;
 
         public GrannyService(
             IServiceProvider serviceProvider,
@@ -30,7 +31,8 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             ITransaction transaction,
             IEnsembleTransactionService ensembleTransactionService,
             IValidationClient validationClient,
-            string identityAccessOutBaseUrl
+            string identityAccessOutBaseUrl,
+            string appUserId
         )
         {
             AssertionConcern.AssertArgumentNotNull(ensembleRepository, nameof(ensembleRepository));
@@ -38,7 +40,8 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             AssertionConcern.AssertArgumentNotNull(transaction, nameof(transaction));
             AssertionConcern.AssertArgumentNotNull(ensembleTransactionService, nameof(ensembleTransactionService));
             AssertionConcern.AssertArgumentNotNull(validationClient, nameof(validationClient));
-            AssertionConcern.AssertArgumentNotEmpty(identityAccessOutBaseUrl, "Parameter cannot bnull or empty.", nameof(identityAccessOutBaseUrl));
+            AssertionConcern.AssertArgumentNotEmpty(identityAccessOutBaseUrl, "Parameter cannot be null or empty.", nameof(identityAccessOutBaseUrl));
+            AssertionConcern.AssertArgumentNotEmpty(appUserId, "Parameter cannot be null or empty.", nameof(appUserId));
 
             this.serviceProvider = serviceProvider;
             this.ensembleRepository = ensembleRepository;
@@ -47,6 +50,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             this.ensembleTransactionService = ensembleTransactionService;
             this.validationClient = validationClient;
             this.identityAccessOutBaseUrl = identityAccessOutBaseUrl;
+            this.appUserId = appUserId;
         }
 
         // TODO: encapsulate in a GrannyCacheService with methods such as: GetInstantiatesClass<T>() etc.
@@ -57,7 +61,6 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             TWriter
         >(
             IGrannyInfo<TGranny, TDeductiveReader, TParameterSet, TWriter> grannyInfo,
-            string appUserId,
             CancellationToken token = default
         )
             where TGranny : IGranny
@@ -66,8 +69,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             where TWriter : Cortex.Coding.d23.neurULization.Processors.Writers.IGrannyWriter<TGranny, TParameterSet>
         {
             var tryGetGrannyResult = await this.TryGetGrannyAsync(
-                grannyInfo, 
-                appUserId
+                grannyInfo
             );
 
             var boolResult = tryGetGrannyResult.Item1;
@@ -97,7 +99,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                             identityAccessOutBaseUrl,
                             n.Id,
                             n.RegionId,
-                            appUserId,
+                            this.appUserId,
                             token
                         );
                         if (!avr.HasErrors)
@@ -107,7 +109,6 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                     if (appUserGuid.HasValue)
                     {
                         await this.ensembleRepository.UniquifyAsync(
-                            appUserId,
                             instantiatesAvatarEnsemble,
                             this.ensembleCache
                         );
@@ -131,8 +132,8 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         }
 
         public async Task<Tuple<bool, TGranny>> TryGetGrannyAsync<TGranny, TDeductiveReader, TParameterSet, TWriter>(
-            IGrannyInfo<TGranny, TDeductiveReader, TParameterSet, TWriter> grannyInfo, 
-            string appUserId
+            IGrannyInfo<TGranny, TDeductiveReader, TParameterSet, TWriter> grannyInfo,
+            string userId = default
         )
             where TGranny : IGranny
             where TDeductiveReader : Processors.Readers.Deductive.IGrannyReader<TGranny, TParameterSet>
@@ -146,8 +147,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             >(
                 this.ensembleRepository,
                 grannyInfo.Parameters,
-                // use appUserId since calls to this function relate to app required grannies
-                appUserId
+                userId
             );
         }
     }

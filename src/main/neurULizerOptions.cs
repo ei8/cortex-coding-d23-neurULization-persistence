@@ -15,7 +15,6 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         private readonly IPrimitiveSet primitives;
         private readonly IDictionary<string, Ensemble> ensembleCache;
         private readonly IGrannyService grannyService;
-        private readonly string appUserId;
 
         public neurULizerOptions(
             IEnsembleRepository ensembleRepository, 
@@ -23,8 +22,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             Coding.d23.neurULization.Processors.Readers.Inductive.IInstanceReader inductiveInstanceReader,
             IPrimitiveSet primitives, 
             IDictionary<string, Ensemble> ensembleCache,
-            IGrannyService grannyService,
-            string appUserId
+            IGrannyService grannyService
         )
         {
             AssertionConcern.AssertArgumentNotNull(ensembleRepository, nameof(ensembleRepository));
@@ -33,16 +31,13 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             AssertionConcern.AssertArgumentNotNull(primitives, nameof(primitives));
             AssertionConcern.AssertArgumentNotNull(ensembleCache, nameof(ensembleCache));
             AssertionConcern.AssertArgumentNotNull(grannyService, nameof(grannyService));
-            string emptyMessage = "Specified value cannot be null or empty.";
-            AssertionConcern.AssertArgumentNotEmpty(appUserId, emptyMessage, nameof(appUserId));
-
+            
             this.ensembleRepository = ensembleRepository;
             this.instanceWriter = instanceWriter;
             this.inductiveInstanceReader = inductiveInstanceReader;
             this.primitives = primitives;
             this.ensembleCache = ensembleCache;
             this.grannyService = grannyService;
-            this.appUserId = appUserId;
         }
 
         public IEnsembleRepository EnsembleRepository => this.ensembleRepository;
@@ -56,7 +51,5 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         public IDictionary<string, Ensemble> EnsembleCache => this.ensembleCache;
 
         public IGrannyService GrannyService => this.grannyService;
-
-        public string AppUserId => this.appUserId;
     }
 }

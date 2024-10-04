@@ -1,9 +1,12 @@
 ﻿using ei8.Cortex.Coding.d23.Grannies;
 using ei8.Cortex.Coding.d23.neurULization.Processors.Readers.Deductive;
 using ei8.Cortex.Coding.d23.neurULization.Processors.Writers;
+using ei8.Cortex.Coding.Properties;
 using ei8.Cortex.Library.Common;
+using neurUL.Common.Domain.Model;
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace ei8.Cortex.Coding.d23.neurULization.Persistence
@@ -15,37 +18,38 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         IPropertyAssociationWriter
     >
     {
-        public static async Task<PropertyAssociationGrannyInfo> CreateById<TAggregate, TProperty>(
+        public static async Task<PropertyAssociationGrannyInfo> CreateById<TAggregate>(
             string propertyName,
             IEnsembleRepository ensembleRepository,
-            Guid valueId,
-            string appUserId,
-            string userId
-        ) => new PropertyAssociationGrannyInfo(
-            // TODO: create extensionmethod to create PropAssocParams from PropertyInfo and minimal parameters, place in d23.neurULization.Persistence
-            new Coding.d23.neurULization.Processors.Readers.Deductive.PropertyAssociationParameterSet(
-                await ensembleRepository.GetExternalReferenceAsync(
-                    appUserId,
-                    typeof(TAggregate).GetProperty(propertyName)
-                ),
-                (await ensembleRepository.GetByQueryAsync(
-                    userId,
-                    new NeuronQuery()
-                    {
-                        Id = new string[] { valueId.ToString() }
-                    },
-                    int.MaxValue
-                )).GetItems<Coding.Neuron>().Single(),
-                // TODO: can't this be retrieved from the property granny as it is specified
-                // as the first parameter of PropertyAssociationParameterSet
-                // or, rather from the [neurULClass(typeof(Avatar))] attribute of the Message class
-                await ensembleRepository.GetExternalReferenceAsync(
-                    appUserId,
-                    typeof(TProperty)
-                ),
-                ValueMatchBy.Id
-            )
-        );
+            Guid valueId
+        )
+        {
+            AssertionConcern.AssertArgumentNotEmpty(propertyName, "Specified parameter cannot be null or empty.",
+                nameof(propertyName));
+            AssertionConcern.AssertArgumentNotNull(ensembleRepository, nameof(ensembleRepository));
+            var property = typeof(TAggregate).GetProperty(propertyName);
+            var classAttribute = property.GetCustomAttributes<neurULClassAttribute>().SingleOrDefault();
+            AssertionConcern.AssertArgumentValid(ca => ca != null, classAttribute, $"Specified property should have a '{nameof(neurULClassAttribute)}'.", nameof(propertyName));
+
+            return new PropertyAssociationGrannyInfo(
+                new Coding.d23.neurULization.Processors.Readers.Deductive.PropertyAssociationParameterSet(
+                    await ensembleRepository.GetExternalReferenceAsync(
+                        property
+                    ),
+                    (await ensembleRepository.GetByQueryAsync(
+                        new NeuronQuery()
+                        {
+                            Id = new string[] { valueId.ToString() }
+                        },
+                        false
+                    )).GetItems<Coding.Neuron>().Single(),
+                    await ensembleRepository.GetExternalReferenceAsync(
+                        classAttribute.Type
+                    ),
+                    ValueMatchBy.Id
+                )
+            );
+        }
 
         public PropertyAssociationGrannyInfo(IPropertyAssociationParameterSet parameters)
         {

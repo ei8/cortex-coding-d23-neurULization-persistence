@@ -14,7 +14,6 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             TWriter
         >(
             IGrannyInfo<TGranny, TDeductiveReader, TParameterSet, TWriter> grannyInfo,
-            string appUserId,
             CancellationToken token = default
         )
             where TGranny : IGranny
@@ -28,8 +27,8 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             TParameterSet, 
             TWriter
         >(
-            IGrannyInfo<TGranny, TDeductiveReader, TParameterSet, TWriter> grannyInfo, 
-            string appUserId
+            IGrannyInfo<TGranny, TDeductiveReader, TParameterSet, TWriter> grannyInfo,
+            string userId = default
         )
             where TGranny : IGranny
             where TDeductiveReader : Processors.Readers.Deductive.IGrannyReader<TGranny, TParameterSet>

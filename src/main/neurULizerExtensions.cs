@@ -15,12 +15,10 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         /// <typeparam name="TValue"></typeparam>
         /// <param name="neurULizer"></param>
         /// <param name="value"></param>
-        /// <param name="userId"></param>
         /// <returns></returns>
         public static async Task<Ensemble> neurULizeAsync<TValue>(
             this IneurULizer neurULizer,
-            TValue value,
-            string userId
+            TValue value
         )
             where TValue : class
         {
@@ -29,7 +27,6 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
 
             // use key to retrieve external reference url from library
             var externalReferences = await options.EnsembleRepository.GetExternalReferencesAsync(
-                options.AppUserId,
                 typeInfo.Keys.ToArray()
             );
 
@@ -38,12 +35,11 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                 .Select(gp => gp.Value);
 
             var idPropertyValueNeurons = (await options.EnsembleRepository.GetByQueryAsync(
-                    userId,
                     new Library.Common.NeuronQuery()
                     {
                         Id = valueNeuronIds
                     },
-                    int.MaxValue
+                    false
                 ))
                 .GetItems<Neuron>()
                 .ToDictionary(n => n.Id.ToString());
@@ -56,7 +52,6 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             );
 
             await options.EnsembleRepository.UniquifyAsync(
-                options.AppUserId,
                 result,
                 options.EnsembleCache
             );
@@ -70,12 +65,10 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         /// <typeparam name="TValue"></typeparam>
         /// <param name="neurULizer"></param>
         /// <param name="value"></param>
-        /// <param name="userId"></param>
         /// <returns></returns>
         public static async Task<IEnumerable<TValue>> DeneurULizeAsync<TValue>(
             this IneurULizer neurULizer,
-            Ensemble value,
-            string userId
+            Ensemble value
         )
             where TValue : class, new()
         {
@@ -85,7 +78,6 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             // use key to retrieve external reference url from library
             var externalReferences = await options.EnsembleRepository
                 .GetExternalReferencesAsync(
-                    userId,
                     typeInfo.Keys.ToArray()
                 );
 
@@ -94,12 +86,10 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                 new InstantiatesClassGrannyInfo(
                     new Coding.d23.neurULization.Processors.Readers.Deductive.InstantiatesClassParameterSet(
                         await options.EnsembleRepository.GetExternalReferenceAsync(
-                            options.AppUserId,
                             typeof(TValue)
                         )
                     )
-                ),
-                options.AppUserId
+                )
             // TODO: add support for CancellationToken
             );
 
