@@ -116,8 +116,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
 
                         await this.ensembleTransactionService.SaveAsync(
                             this.transaction,
-                            instantiatesAvatarEnsemble,
-                            appUserGuid.Value
+                            instantiatesAvatarEnsemble
                         );
 
                         await this.transaction.CommitAsync();
