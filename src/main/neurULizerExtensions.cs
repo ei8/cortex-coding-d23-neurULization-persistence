@@ -41,7 +41,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                     },
                     false
                 ))
-                .GetItems<Neuron>()
+                .Ensemble.GetItems<Neuron>()
                 .ToDictionary(n => n.Id.ToString());
 
             var result = neurULizer.neurULize(

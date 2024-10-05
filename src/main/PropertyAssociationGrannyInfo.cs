@@ -42,7 +42,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                             Id = new string[] { valueId.ToString() }
                         },
                         false
-                    )).GetItems<Coding.Neuron>().Single(),
+                    )).Ensemble.GetItems<Coding.Neuron>().Single(),
                     await ensembleRepository.GetExternalReferenceAsync(
                         classAttribute.Type
                     ),
