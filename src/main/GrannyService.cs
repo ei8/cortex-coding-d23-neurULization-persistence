@@ -1,4 +1,5 @@
 ﻿using ei8.Cortex.Coding.d23.Grannies;
+using ei8.Cortex.Coding.d23.neurULization.Processors.Readers.Deductive;
 using ei8.Cortex.Coding.d23.neurULization.Processors.Writers;
 using ei8.Cortex.Coding.Persistence;
 using ei8.Cortex.IdentityAccess.Client.Out;
@@ -54,7 +55,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         }
 
         // TODO: encapsulate in a GrannyCacheService with methods such as: GetInstantiatesClass<T>() etc.
-        public async Task<Tuple<bool, TGranny>> TryGetBuildPersistAsync<
+        public async Task<Tuple<bool, TGranny>> TryGetParseBuildPersistAsync<
             TGranny, 
             TDeductiveReader, 
             TParameterSet, 
@@ -68,28 +69,28 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             where TParameterSet : Coding.d23.neurULization.Processors.Readers.Deductive.IDeductiveParameterSet
             where TWriter : Cortex.Coding.d23.neurULization.Processors.Writers.IGrannyWriter<TGranny, TParameterSet>
         {
-            var tryGetGrannyResult = await this.TryGetGrannyAsync(
-                grannyInfo
+            var tryGetGrannyResult = await this.TryGetParseAsync(
+                new[] { grannyInfo }
             );
 
-            var boolResult = tryGetGrannyResult.Item1;
-            var grannyResult = tryGetGrannyResult.Item2;
+            var boolResult = tryGetGrannyResult.Single().Success;
+            var grannyResult = (TGranny) tryGetGrannyResult.Single().Granny;
 
             if (!boolResult)
             {
-                var instantiatesAvatarEnsemble = new Ensemble();
+                var instantiatesEnsemble = new Ensemble();
                 grannyResult = this.serviceProvider.GetRequiredService<TWriter>().ParseBuild<
                     TGranny,
                     TWriter,
                     TParameterSet
                 >(
-                    instantiatesAvatarEnsemble,
+                    instantiatesEnsemble,
                     grannyInfo.Parameters
                 );
 
-                if (instantiatesAvatarEnsemble.AnyTransient())
+                if (instantiatesEnsemble.AnyTransient())
                 {
-                    var iaeNeurons = instantiatesAvatarEnsemble.GetItems<Coding.Neuron>()
+                    var iaeNeurons = instantiatesEnsemble.GetItems<Coding.Neuron>()
                         .Where(n => n.IsTransient);
 
                     Guid? appUserGuid = null;
@@ -109,14 +110,14 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                     if (appUserGuid.HasValue)
                     {
                         await this.ensembleRepository.UniquifyAsync(
-                            instantiatesAvatarEnsemble,
-                            this.ensembleCache
+                            instantiatesEnsemble,
+                            cache: this.ensembleCache
                         );
                         await this.transaction.BeginAsync(appUserGuid.Value);
 
                         await this.ensembleTransactionService.SaveAsync(
                             this.transaction,
-                            instantiatesAvatarEnsemble
+                            instantiatesEnsemble
                         );
 
                         await this.transaction.CommitAsync();
@@ -130,8 +131,8 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             return Tuple.Create(boolResult, grannyResult);
         }
 
-        public async Task<Tuple<bool, TGranny>> TryGetGrannyAsync<TGranny, TDeductiveReader, TParameterSet, TWriter>(
-            IGrannyInfo<TGranny, TDeductiveReader, TParameterSet, TWriter> grannyInfo,
+        public async Task<IEnumerable<GrannyResult>> TryGetParseAsync<TGranny, TDeductiveReader, TParameterSet, TWriter>(
+            IEnumerable<IGrannyInfo<TGranny, TDeductiveReader, TParameterSet, TWriter>> grannyInfos,
             string userId = default
         )
             where TGranny : IGranny
@@ -139,15 +140,54 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             where TParameterSet : Processors.Readers.Deductive.IDeductiveParameterSet
             where TWriter : Cortex.Coding.d23.neurULization.Processors.Writers.IGrannyWriter<TGranny, TParameterSet>
         {
-            return await this.serviceProvider.GetRequiredService<TDeductiveReader>().TryGetGrannyAsync<
-                TGranny,
-                TDeductiveReader,
-                TParameterSet
-            >(
-                this.ensembleRepository,
-                grannyInfo.Parameters,
-                userId
-            );
+            var result = new List<GrannyResult>();
+            
+            foreach (var gi in grannyInfos)
+            {
+                var getResult = await this.serviceProvider.GetRequiredService<TDeductiveReader>().TryGetParseAsync<
+                    TGranny,
+                    TDeductiveReader,
+                    TParameterSet
+                >(
+                    this.ensembleRepository,
+                    gi.Parameters,
+                    userId
+                );
+
+                result.Add(new GrannyResult(getResult.Item1, getResult.Item2));
+            }
+
+            return result.AsEnumerable();
+        }
+
+        public IEnumerable<GrannyResult> TryParse<TGranny, TDeductiveReader, TParameterSet, TWriter>(
+            IEnumerable<IGrannyInfo<TGranny, TDeductiveReader, TParameterSet, TWriter>> grannyInfos, 
+            Ensemble ensemble
+        )
+            where TGranny : IGranny
+            where TDeductiveReader : IGrannyReader<TGranny, TParameterSet>
+            where TParameterSet : IDeductiveParameterSet
+            where TWriter : IGrannyWriter<TGranny, TParameterSet>
+        {
+            var result = new List<GrannyResult>();
+            foreach (var gi in grannyInfos)
+            {
+                var bResult = this.serviceProvider.GetRequiredService<TDeductiveReader>().TryParse(
+                    ensemble,
+                    gi.Parameters,
+                    out TGranny gResult
+                );
+
+                result.Add(
+                    new GrannyResult
+                    (
+                        bResult,
+                        gResult
+                    )
+                );
+            }
+
+            return result.AsEnumerable();
         }
     }
 }

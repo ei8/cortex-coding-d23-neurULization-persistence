@@ -1,4 +1,6 @@
-﻿using ei8.Cortex.Coding.d23.neurULization.Processors.Writers;
+﻿using ei8.Cortex.Coding.d23.neurULization.Processors.Readers.Inductive;
+using ei8.Cortex.Coding.d23.neurULization.Processors.Writers;
+using ei8.Cortex.Coding.Persistence;
 using neurUL.Common.Domain.Model;
 using System.Collections.Generic;
 
@@ -6,23 +8,14 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
 {
     public class neurULizerOptions : Id23neurULizerOptions
     {
-        // TODO: see if possible to remove ensembleRepository, 
-        // if so, neurULizer can be returned to d23.neurULization
-        // and thus make it persistence unaware
-        private readonly IEnsembleRepository ensembleRepository;
-        private readonly IInstanceWriter instanceWriter;
-        private readonly Processors.Readers.Inductive.IInstanceReader inductiveInstanceReader;
-        private readonly IPrimitiveSet primitives;
-        private readonly IDictionary<string, Ensemble> ensembleCache;
-        private readonly IGrannyService grannyService;
-
         public neurULizerOptions(
             IEnsembleRepository ensembleRepository, 
             Coding.d23.neurULization.Processors.Writers.IInstanceWriter instanceWriter,
             Coding.d23.neurULization.Processors.Readers.Inductive.IInstanceReader inductiveInstanceReader,
             IPrimitiveSet primitives, 
             IDictionary<string, Ensemble> ensembleCache,
-            IGrannyService grannyService
+            IGrannyService grannyService,
+            IEnsembleTransactionData transactionData
         )
         {
             AssertionConcern.AssertArgumentNotNull(ensembleRepository, nameof(ensembleRepository));
@@ -31,25 +24,23 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             AssertionConcern.AssertArgumentNotNull(primitives, nameof(primitives));
             AssertionConcern.AssertArgumentNotNull(ensembleCache, nameof(ensembleCache));
             AssertionConcern.AssertArgumentNotNull(grannyService, nameof(grannyService));
-            
-            this.ensembleRepository = ensembleRepository;
-            this.instanceWriter = instanceWriter;
-            this.inductiveInstanceReader = inductiveInstanceReader;
-            this.primitives = primitives;
-            this.ensembleCache = ensembleCache;
-            this.grannyService = grannyService;
+            AssertionConcern.AssertArgumentNotNull(transactionData, nameof(transactionData));
+
+            this.EnsembleRepository = ensembleRepository;
+            this.InstanceWriter = instanceWriter;
+            this.InductiveInstanceReader = inductiveInstanceReader;
+            this.Primitives = primitives;
+            this.EnsembleCache = ensembleCache;
+            this.GrannyService = grannyService;
+            this.TransactionData = transactionData;
         }
 
-        public IEnsembleRepository EnsembleRepository => this.ensembleRepository;
-
-        public IInstanceWriter InstanceWriter => this.instanceWriter;
-
-        public Processors.Readers.Inductive.IInstanceReader InductiveInstanceReader => this.inductiveInstanceReader;
-
-        public IPrimitiveSet Primitives => this.primitives;
-
-        public IDictionary<string, Ensemble> EnsembleCache => this.ensembleCache;
-
-        public IGrannyService GrannyService => this.grannyService;
+        public IEnsembleRepository EnsembleRepository { get; }
+        public IInstanceWriter InstanceWriter { get; }
+        public IInstanceReader InductiveInstanceReader { get; }
+        public IPrimitiveSet Primitives { get; }
+        public IDictionary<string, Ensemble> EnsembleCache { get; }
+        public IGrannyService GrannyService { get; }
+        public IEnsembleTransactionData TransactionData { get; }
     }
 }

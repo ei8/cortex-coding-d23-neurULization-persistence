@@ -1,8 +1,10 @@
 ﻿using ei8.Cortex.Coding.d23.Grannies;
+using ei8.Cortex.Coding.Persistence;
 using ei8.Cortex.Coding.Reflection;
 using neurUL.Common.Domain.Model;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace ei8.Cortex.Coding.d23.neurULization.Persistence
@@ -27,7 +29,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
 
             // use key to retrieve external reference url from library
             var externalReferences = await options.EnsembleRepository.GetExternalReferencesAsync(
-                typeInfo.Keys.ToArray()
+                typeInfo.Keys.Except(new[] { string.Empty }).ToArray()
             );
 
             var valueNeuronIds = typeInfo.GrannyProperties
@@ -42,7 +44,10 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                     false
                 ))
                 .Ensemble.GetItems<Neuron>()
-                .ToDictionary(n => n.Id.ToString());
+                .ToDictionary(n => n.Id);
+
+            foreach (var stn in options.TransactionData.SavedTransientNeurons)
+                idPropertyValueNeurons.Add(stn.Id, stn);
 
             var result = neurULizer.neurULize(
                 value,
@@ -53,6 +58,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
 
             await options.EnsembleRepository.UniquifyAsync(
                 result,
+                options.TransactionData,
                 options.EnsembleCache
             );
 
@@ -76,13 +82,12 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             var options = (neurULizerOptions) neurULizer.Options;
 
             // use key to retrieve external reference url from library
-            var externalReferences = await options.EnsembleRepository
-                .GetExternalReferencesAsync(
-                    typeInfo.Keys.ToArray()
-                );
+            var externalReferences = await options.EnsembleRepository.GetExternalReferencesAsync(
+                typeInfo.Keys.Except(new[] { string.Empty }).ToArray()
+            );
 
             // TODO: use GrannyCacheService
-            var instantiatesClassResult = await options.GrannyService.TryGetBuildPersistAsync(
+            var instantiatesClassResult = await options.GrannyService.TryGetParseBuildPersistAsync(
                 new InstantiatesClassGrannyInfo(
                     new Coding.d23.neurULization.Processors.Readers.Deductive.InstantiatesClassParameterSet(
                         await options.EnsembleRepository.GetExternalReferenceAsync(
