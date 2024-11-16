@@ -22,13 +22,13 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             where TParameterSet : Coding.d23.neurULization.Processors.Readers.Deductive.IDeductiveParameterSet
             where TWriter : Cortex.Coding.d23.neurULization.Processors.Writers.IGrannyWriter<TGranny, TParameterSet>;
 
-        Task<IEnumerable<GrannyResult>> TryGetParseAsync<
+        Task<GrannyResult> TryGetParseAsync<
             TGranny, 
             TDeductiveReader, 
             TParameterSet, 
             TWriter
         >(
-            IEnumerable<IGrannyInfo<TGranny, TDeductiveReader, TParameterSet, TWriter>> grannyInfos,
+            IGrannyInfo<TGranny, TDeductiveReader, TParameterSet, TWriter> grannyInfo,
             string userId = default
         )
             where TGranny : IGranny

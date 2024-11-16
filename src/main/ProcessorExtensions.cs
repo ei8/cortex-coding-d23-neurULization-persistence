@@ -27,7 +27,9 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                     ensemble,
                     new List<IGranny>(),
                     userId
-                ) && processor.TryParse(
+                );
+            
+            result = result && processor.TryParse(
                     ensemble,
                     parameters,
                     out grannyResult

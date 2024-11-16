@@ -69,12 +69,10 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             where TParameterSet : Coding.d23.neurULization.Processors.Readers.Deductive.IDeductiveParameterSet
             where TWriter : Cortex.Coding.d23.neurULization.Processors.Writers.IGrannyWriter<TGranny, TParameterSet>
         {
-            var tryGetGrannyResult = await this.TryGetParseAsync(
-                new[] { grannyInfo }
-            );
+            var tryGetGrannyResult = await this.TryGetParseAsync(grannyInfo);
 
-            var boolResult = tryGetGrannyResult.Single().Success;
-            var grannyResult = (TGranny) tryGetGrannyResult.Single().Granny;
+            var boolResult = tryGetGrannyResult.Success;
+            var grannyResult = (TGranny) tryGetGrannyResult.Granny;
 
             if (!boolResult)
             {
@@ -131,8 +129,8 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             return Tuple.Create(boolResult, grannyResult);
         }
 
-        public async Task<IEnumerable<GrannyResult>> TryGetParseAsync<TGranny, TDeductiveReader, TParameterSet, TWriter>(
-            IEnumerable<IGrannyInfo<TGranny, TDeductiveReader, TParameterSet, TWriter>> grannyInfos,
+        public async Task<GrannyResult> TryGetParseAsync<TGranny, TDeductiveReader, TParameterSet, TWriter>(
+            IGrannyInfo<TGranny, TDeductiveReader, TParameterSet, TWriter> grannyInfo,
             string userId = default
         )
             where TGranny : IGranny
@@ -140,24 +138,17 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             where TParameterSet : Processors.Readers.Deductive.IDeductiveParameterSet
             where TWriter : Cortex.Coding.d23.neurULization.Processors.Writers.IGrannyWriter<TGranny, TParameterSet>
         {
-            var result = new List<GrannyResult>();
-            
-            foreach (var gi in grannyInfos)
-            {
-                var getResult = await this.serviceProvider.GetRequiredService<TDeductiveReader>().TryGetParseAsync<
-                    TGranny,
-                    TDeductiveReader,
-                    TParameterSet
-                >(
-                    this.ensembleRepository,
-                    gi.Parameters,
-                    userId
-                );
+            var result = await this.serviceProvider.GetRequiredService<TDeductiveReader>().TryGetParseAsync<
+                TGranny,
+                TDeductiveReader,
+                TParameterSet
+            >(
+                this.ensembleRepository,
+                grannyInfo.Parameters,
+                userId
+            );
 
-                result.Add(new GrannyResult(getResult.Item1, getResult.Item2));
-            }
-
-            return result.AsEnumerable();
+            return new GrannyResult(result.Item1, result.Item2);
         }
 
         public IEnumerable<GrannyResult> TryParse<TGranny, TDeductiveReader, TParameterSet, TWriter>(
