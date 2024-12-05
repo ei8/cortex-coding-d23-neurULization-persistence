@@ -22,9 +22,9 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             return $"{typeof(TAggregate).FullName}-{propertyName}-{valueId}";
         }
 
-        public static async Task<IGranny> GetPropertyAssociationFromCacheOrDb<TAggregate>(
+        public static async Task<GrannyResult> TryGetPropertyAssociationFromCacheOrDb<TAggregate>(
             this IGrannyService grannyService,
-            IEnsembleRepository ensembleRepository,
+            IExternalReferenceRepository externalReferenceRepository,
             string propertyName,
             Guid valueId,
             IDictionary<string, IGranny> propertyAssociationCache
@@ -32,29 +32,27 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         {
             AssertionConcern.AssertArgumentNotEmpty(propertyName, "Specified parameter cannot be null or empty.",
                 nameof(propertyName));
-            AssertionConcern.AssertArgumentNotNull(ensembleRepository, nameof(ensembleRepository));
             var property = typeof(TAggregate).GetProperty(propertyName);
             var classAttribute = property.GetCustomAttributes<neurULClassAttribute>().SingleOrDefault();
             AssertionConcern.AssertArgumentValid(ca => ca != null, classAttribute, $"Specified property should have a '{nameof(neurULClassAttribute)}'.", nameof(propertyName));
 
             var propertyCacheId = GrannyServiceExtensions.CreateCacheId<TAggregate>(propertyName, valueId);
+            GrannyResult result = new GrannyResult(false, null);
 
             if (!propertyAssociationCache.ContainsKey(propertyCacheId))
             {
                 var hasPropertyResult = await grannyService.TryGetParseAsync(
                     new PropertyAssociationGrannyInfo(
                         new PropertyAssociationParameterSet(
-                            await ensembleRepository.GetExternalReferenceAsync(property),
-                            (await ensembleRepository.GetByQueryAsync(
+                            await externalReferenceRepository.GetByKeyAsync(property),
+                            (await grannyService.EnsembleRepository.GetByQueryAsync(
                                 new NeuronQuery()
                                 {
                                     Id = new string[] { valueId.ToString() }
                                 },
                                 false
                             )).Ensemble.GetItems<Coding.Neuron>().Single(),
-                            await ensembleRepository.GetExternalReferenceAsync(
-                                classAttribute.Type
-                            ),
+                            await externalReferenceRepository.GetByKeyAsync(classAttribute.Type),
                             ValueMatchBy.Id
                         )
                     )
@@ -64,7 +62,10 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                     propertyAssociationCache.Add(propertyCacheId, hasPropertyResult.Granny);
             }
 
-            return propertyAssociationCache[propertyCacheId];
+            if (propertyAssociationCache.ContainsKey(propertyCacheId))
+                result = new GrannyResult(true, propertyAssociationCache[propertyCacheId]);
+
+            return result;
         }
     }
 }

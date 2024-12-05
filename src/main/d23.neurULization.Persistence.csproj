@@ -4,16 +4,24 @@
     <TargetFramework>netstandard2.0</TargetFramework>
 	<AssemblyName>ei8.Cortex.Coding.d23.neurULization.Persistence</AssemblyName>
 	<RootNamespace>ei8.Cortex.Coding.d23.neurULization.Persistence</RootNamespace>
+    <PackageId>ei8.Cortex.Coding.d23.neurULization.Persistence</PackageId>
+    <PackageVersion>0.0.9</PackageVersion>
+    <Authors>Elmer Roderick Niem Bool</Authors>
+    <Description>Cortex Coding d# neurULization Persistence</Description>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageReleaseNotes>Initial commit.</PackageReleaseNotes>
+    <PackageTags>cortex coding d# neurulization persistence</PackageTags>
+    <Version>0.0.9</Version>
+    <PackageLicenseUrl>https://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ei8.Cortex.Coding" Version="0.0.6" />
+    <PackageReference Include="ei8.Cortex.Coding.d23" Version="0.0.5" />
+    <PackageReference Include="ei8.Cortex.Coding.Persistence" Version="0.0.11" />
     <PackageReference Include="ei8.Cortex.IdentityAccess.Client" Version="0.2.2" />
     <PackageReference Include="ei8.EventSourcing.Client" Version="0.2.12" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\cortex-coding-d23\src\main\d23.csproj" />
-    <ProjectReference Include="..\..\..\cortex-coding-persistence\src\main\Coding.Persistence.csproj" />
   </ItemGroup>
 
 </Project>

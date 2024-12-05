@@ -12,6 +12,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
     {
         public static async Task<IEnumerable<GrannyResult>> GetStringValues(
             this IEnsembleRepository ensembleRepository, 
+            IExternalReferenceRepository externalReferenceRepository,
             IGrannyService grannyService, 
             Ensemble ensemble, 
             IEnumerable<Guid> ids, 
@@ -27,7 +28,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                 },
                 userId
             );
-            var stringNeuron = await ensembleRepository.GetExternalReferenceAsync(typeof(string));
+            var stringNeuron = await externalReferenceRepository.GetByKeyAsync(typeof(string));
             return grannyService.TryParse(
                 ids.Select(i =>
                 {

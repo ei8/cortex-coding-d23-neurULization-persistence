@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33516.290
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "d23.neurULization.Persistence", "main\d23.neurULization.Persistence.csproj", "{14D8117C-FAE1-4351-B6FE-F517D0C74F36}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{14D8117C-FAE1-4351-B6FE-F517D0C74F36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14D8117C-FAE1-4351-B6FE-F517D0C74F36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14D8117C-FAE1-4351-B6FE-F517D0C74F36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14D8117C-FAE1-4351-B6FE-F517D0C74F36}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4354AF5C-840F-45A3-A082-14D48D4CE077}
+	EndGlobalSection
+EndGlobal

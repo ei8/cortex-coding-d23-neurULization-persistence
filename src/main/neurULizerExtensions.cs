@@ -28,7 +28,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             var options = (neurULizerOptions) neurULizer.Options;
 
             // use key to retrieve external reference url from library
-            var externalReferences = await options.EnsembleRepository.GetExternalReferencesAsync(
+            var externalReferences = await options.ExternalReferenceRepository.GetByKeysAsync(
                 typeInfo.Keys.Except(new[] { string.Empty }).ToArray()
             );
 
@@ -82,7 +82,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             var options = (neurULizerOptions) neurULizer.Options;
 
             // use key to retrieve external reference url from library
-            var externalReferences = await options.EnsembleRepository.GetExternalReferencesAsync(
+            var externalReferences = await options.ExternalReferenceRepository.GetByKeysAsync(
                 typeInfo.Keys.Except(new[] { string.Empty }).ToArray()
             );
 
@@ -90,7 +90,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             var instantiatesClassResult = await options.GrannyService.TryGetParseBuildPersistAsync(
                 new InstantiatesClassGrannyInfo(
                     new Coding.d23.neurULization.Processors.Readers.Deductive.InstantiatesClassParameterSet(
-                        await options.EnsembleRepository.GetExternalReferenceAsync(
+                        await options.ExternalReferenceRepository.GetByKeyAsync(
                             typeof(TValue)
                         )
                     )

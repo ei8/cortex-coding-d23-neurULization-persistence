@@ -16,6 +16,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         private readonly ITransaction transaction;
         private readonly IEnsembleTransactionService ensembleTransactionService;
         private readonly IneurULizer neurULizer;
+        private readonly IExternalReferenceRepository externalReferenceRepository;
         private readonly IEnsembleRepository ensembleRepository;
         private readonly IGrannyService grannyService;
 
@@ -23,6 +24,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             ITransaction transaction,
             IEnsembleTransactionService ensembleTransactionService,
             IneurULizer neurULizer,
+            IExternalReferenceRepository externalReferenceRepository,
             IEnsembleRepository ensembleRepository,
             IGrannyService grannyService
         )
@@ -30,12 +32,14 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             AssertionConcern.AssertArgumentNotNull(transaction, nameof(transaction));
             AssertionConcern.AssertArgumentNotNull(ensembleTransactionService, nameof(ensembleTransactionService));
             AssertionConcern.AssertArgumentNotNull(neurULizer, nameof(neurULizer));
+            AssertionConcern.AssertArgumentNotNull(externalReferenceRepository, nameof(externalReferenceRepository));
             AssertionConcern.AssertArgumentNotNull(ensembleRepository, nameof(ensembleRepository));
             AssertionConcern.AssertArgumentNotNull(grannyService, nameof(grannyService));
 
             this.transaction = transaction;
             this.ensembleTransactionService = ensembleTransactionService;
             this.neurULizer = neurULizer;
+            this.externalReferenceRepository = externalReferenceRepository;
             this.ensembleRepository = ensembleRepository;
             this.grannyService = grannyService;
         }
@@ -47,7 +51,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             var instantiatesStringResult = await this.grannyService.TryGetParseBuildPersistAsync(
                 new InstantiatesClassGrannyInfo(
                     new Coding.d23.neurULization.Processors.Readers.Deductive.InstantiatesClassParameterSet(
-                        await this.ensembleRepository.GetExternalReferenceAsync(
+                        await this.externalReferenceRepository.GetByKeyAsync(
                             typeof(string)
                         )
                     )
