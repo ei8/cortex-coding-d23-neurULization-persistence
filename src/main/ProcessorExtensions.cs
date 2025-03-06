@@ -10,7 +10,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
     {
         public static async Task<Tuple<bool, TGranny>> TryGetParseAsync<TGranny, TDeductiveReader, TParameterSet>(
             this TDeductiveReader processor,
-            IEnsembleRepository ensembleRepository,
+            INetworkRepository networkRepository,
             TParameterSet parameters,
             string userId
         )
@@ -18,19 +18,19 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             where TDeductiveReader : Coding.d23.neurULization.Processors.Readers.Deductive.IGrannyReader<TGranny, TParameterSet>
             where TParameterSet : Coding.d23.neurULization.Processors.Readers.Deductive.IDeductiveParameterSet
         {
-            var queries = processor.GetQueries(parameters);
-            var ensemble = new Ensemble();
+            var network = new Network();
+            var queries = processor.GetQueries(network, parameters);
 
             TGranny grannyResult = default;
             bool result = await queries.Process(
-                    ensembleRepository,
-                    ensemble,
+                    networkRepository,
+                    network,
                     new List<IGranny>(),
                     userId
                 );
             
             result = result && processor.TryParse(
-                    ensemble,
+                    network,
                     parameters,
                     out grannyResult
                 );

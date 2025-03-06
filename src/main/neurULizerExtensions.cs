@@ -12,13 +12,13 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
     public static class neurULizerExtensions
     {
         /// <summary>
-        /// Persistence-aware neurULize. Retrieves external references, idPropertyValueNeurons, and uniquifies resulting ensemble.
+        /// Persistence-aware neurULize. Retrieves external references, idPropertyValueNeurons, and uniquifies resulting network.
         /// </summary>
         /// <typeparam name="TValue"></typeparam>
         /// <param name="neurULizer"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static async Task<Ensemble> neurULizeAsync<TValue>(
+        public static async Task<Network> neurULizeAsync<TValue>(
             this IneurULizer neurULizer,
             TValue value
         )
@@ -36,14 +36,14 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                 .Where(gp => gp.ValueMatchBy == ValueMatchBy.Id)
                 .Select(gp => gp.Value);
 
-            var idPropertyValueNeurons = (await options.EnsembleRepository.GetByQueryAsync(
+            var idPropertyValueNeurons = (await options.NetworkRepository.GetByQueryAsync(
                     new Library.Common.NeuronQuery()
                     {
                         Id = valueNeuronIds
                     },
                     false
                 ))
-                .Ensemble.GetItems<Neuron>()
+                .Network.GetItems<Neuron>()
                 .ToDictionary(n => n.Id);
 
             foreach (var stn in options.TransactionData.SavedTransientNeurons)
@@ -56,10 +56,10 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                 externalReferences
             );
 
-            await options.EnsembleRepository.UniquifyAsync(
+            await options.NetworkRepository.UniquifyAsync(
                 result,
                 options.TransactionData,
-                options.EnsembleCache
+                options.NetworkCache
             );
 
             return result;
@@ -74,7 +74,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         /// <returns></returns>
         public static async Task<IEnumerable<TValue>> DeneurULizeAsync<TValue>(
             this IneurULizer neurULizer,
-            Ensemble value
+            Network value
         )
             where TValue : class, new()
         {

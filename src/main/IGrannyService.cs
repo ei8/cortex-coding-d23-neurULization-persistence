@@ -43,13 +43,13 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             TWriter
         >(
             IEnumerable<IGrannyInfo<TGranny, TDeductiveReader, TParameterSet, TWriter>> grannyInfos,
-            Ensemble ensemble
+            Network network
         )
             where TGranny : IGranny
             where TDeductiveReader : Processors.Readers.Deductive.IGrannyReader<TGranny, TParameterSet>
             where TParameterSet : Processors.Readers.Deductive.IDeductiveParameterSet
             where TWriter : Cortex.Coding.d23.neurULization.Processors.Writers.IGrannyWriter<TGranny, TParameterSet>;
 
-        IEnsembleRepository EnsembleRepository { get; }
+        INetworkRepository NetworkRepository { get; }
     }
 }

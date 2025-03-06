@@ -8,18 +8,18 @@ using ei8.Cortex.Coding.Persistence;
 
 namespace ei8.Cortex.Coding.d23.neurULization.Persistence
 {
-    public static class EnsembleRepositoryExtensions
+    public static class NetworkRepositoryExtensions
     {
         public static async Task<IEnumerable<GrannyResult>> GetStringValues(
-            this IEnsembleRepository ensembleRepository, 
+            this INetworkRepository networkRepository, 
             IExternalReferenceRepository externalReferenceRepository,
             IGrannyService grannyService, 
-            Ensemble ensemble, 
+            Network network, 
             IEnumerable<Guid> ids, 
             string userId
         )
         {
-            var idsQueryResult = await ensembleRepository.GetByQueryAsync(
+            var idsQueryResult = await networkRepository.GetByQueryAsync(
                 new NeuronQuery()
                 {
                     Id = ids.Select(i => i.ToString()),
@@ -32,7 +32,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             return grannyService.TryParse(
                 ids.Select(i =>
                 {
-                    ensemble.TryGetById(i, out Coding.Neuron valueNeuron);
+                    network.TryGetById(i, out Coding.Neuron valueNeuron);
                     return new ValueGrannyInfo(
                         new ValueParameterSet(
                             valueNeuron,
@@ -42,7 +42,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                     );
                 }
                 ),
-                idsQueryResult.Ensemble
+                idsQueryResult.Network
             );
         }
     }

@@ -14,33 +14,33 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
     public class StringWrapperRepository : IStringWrapperRepository
     {
         private readonly ITransaction transaction;
-        private readonly IEnsembleTransactionService ensembleTransactionService;
+        private readonly INetworkTransactionService networkTransactionService;
         private readonly IneurULizer neurULizer;
         private readonly IExternalReferenceRepository externalReferenceRepository;
-        private readonly IEnsembleRepository ensembleRepository;
+        private readonly INetworkRepository networkRepository;
         private readonly IGrannyService grannyService;
 
         public StringWrapperRepository(
             ITransaction transaction,
-            IEnsembleTransactionService ensembleTransactionService,
+            INetworkTransactionService networkTransactionService,
             IneurULizer neurULizer,
             IExternalReferenceRepository externalReferenceRepository,
-            IEnsembleRepository ensembleRepository,
+            INetworkRepository networkRepository,
             IGrannyService grannyService
         )
         {
             AssertionConcern.AssertArgumentNotNull(transaction, nameof(transaction));
-            AssertionConcern.AssertArgumentNotNull(ensembleTransactionService, nameof(ensembleTransactionService));
+            AssertionConcern.AssertArgumentNotNull(networkTransactionService, nameof(networkTransactionService));
             AssertionConcern.AssertArgumentNotNull(neurULizer, nameof(neurULizer));
             AssertionConcern.AssertArgumentNotNull(externalReferenceRepository, nameof(externalReferenceRepository));
-            AssertionConcern.AssertArgumentNotNull(ensembleRepository, nameof(ensembleRepository));
+            AssertionConcern.AssertArgumentNotNull(networkRepository, nameof(networkRepository));
             AssertionConcern.AssertArgumentNotNull(grannyService, nameof(grannyService));
 
             this.transaction = transaction;
-            this.ensembleTransactionService = ensembleTransactionService;
+            this.networkTransactionService = networkTransactionService;
             this.neurULizer = neurULizer;
             this.externalReferenceRepository = externalReferenceRepository;
-            this.ensembleRepository = ensembleRepository;
+            this.networkRepository = networkRepository;
             this.grannyService = grannyService;
         }
 
@@ -64,7 +64,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                 $"'Instantiates^String' is required to invoke {nameof(StringWrapperRepository.GetByIds)}"
             );
 
-            var queryResult = await ensembleRepository.GetByQueryAsync(
+            var queryResult = await networkRepository.GetByQueryAsync(
                 new NeuronQuery()
                 {
                     Id = ids.Select(i => i.ToString()),
@@ -79,7 +79,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                 userId
             );
 
-            return await this.neurULizer.DeneurULizeAsync<StringWrapper>(queryResult.Ensemble);
+            return await this.neurULizer.DeneurULizeAsync<StringWrapper>(queryResult.Network);
         }
 
         public async Task Save(StringWrapper stringValue, CancellationToken token = default)
@@ -87,7 +87,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             // TODO: handle updates - message.Version == 0 ? WriteMode.Create : WriteMode.Update
             var me = await this.neurULizer.neurULizeAsync(stringValue);
 
-            await this.ensembleTransactionService.SaveAsync(this.transaction, me);
+            await this.networkTransactionService.SaveAsync(this.transaction, me);
         }
     }
 }

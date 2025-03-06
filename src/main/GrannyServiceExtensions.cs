@@ -45,13 +45,13 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                     new PropertyAssociationGrannyInfo(
                         new PropertyAssociationParameterSet(
                             await externalReferenceRepository.GetByKeyAsync(property),
-                            (await grannyService.EnsembleRepository.GetByQueryAsync(
+                            (await grannyService.NetworkRepository.GetByQueryAsync(
                                 new NeuronQuery()
                                 {
                                     Id = new string[] { valueId.ToString() }
                                 },
                                 false
-                            )).Ensemble.GetItems<Coding.Neuron>().Single(),
+                            )).Network.GetItems<Coding.Neuron>().Single(),
                             await externalReferenceRepository.GetByKeyAsync(classAttribute.Type),
                             ValueMatchBy.Id
                         )

@@ -10,41 +10,41 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
     {
         public neurULizerOptions(
             IExternalReferenceRepository externalReferenceRepository,
-            IEnsembleRepository ensembleRepository, 
+            INetworkRepository networkRepository, 
             Coding.d23.neurULization.Processors.Writers.IInstanceWriter instanceWriter,
             Coding.d23.neurULization.Processors.Readers.Inductive.IInstanceReader inductiveInstanceReader,
             IExternalReferenceSet externalReferences, 
-            IDictionary<string, Ensemble> ensembleCache,
+            IDictionary<string, Network> networkCache,
             IGrannyService grannyService,
-            IEnsembleTransactionData transactionData
+            INetworkTransactionData transactionData
         )
         {
             AssertionConcern.AssertArgumentNotNull(externalReferenceRepository, nameof(externalReferenceRepository));
-            AssertionConcern.AssertArgumentNotNull(ensembleRepository, nameof(ensembleRepository));
+            AssertionConcern.AssertArgumentNotNull(networkRepository, nameof(networkRepository));
             AssertionConcern.AssertArgumentNotNull(instanceWriter, nameof(instanceWriter));
             AssertionConcern.AssertArgumentNotNull(inductiveInstanceReader, nameof(inductiveInstanceReader));
             AssertionConcern.AssertArgumentNotNull(externalReferences, nameof(externalReferences));
-            AssertionConcern.AssertArgumentNotNull(ensembleCache, nameof(ensembleCache));
+            AssertionConcern.AssertArgumentNotNull(networkCache, nameof(networkCache));
             AssertionConcern.AssertArgumentNotNull(grannyService, nameof(grannyService));
             AssertionConcern.AssertArgumentNotNull(transactionData, nameof(transactionData));
 
             this.ExternalReferenceRepository = externalReferenceRepository;
-            this.EnsembleRepository = ensembleRepository;
+            this.NetworkRepository = networkRepository;
             this.InstanceWriter = instanceWriter;
             this.InductiveInstanceReader = inductiveInstanceReader;
             this.ExternalReferences = externalReferences;
-            this.EnsembleCache = ensembleCache;
+            this.NetworkCache = networkCache;
             this.GrannyService = grannyService;
             this.TransactionData = transactionData;
         }
 
         public IExternalReferenceRepository ExternalReferenceRepository { get; }
-        public IEnsembleRepository EnsembleRepository { get; }
+        public INetworkRepository NetworkRepository { get; }
         public IInstanceWriter InstanceWriter { get; }
         public IInstanceReader InductiveInstanceReader { get; }
         public IExternalReferenceSet ExternalReferences { get; }
-        public IDictionary<string, Ensemble> EnsembleCache { get; }
+        public IDictionary<string, Network> NetworkCache { get; }
         public IGrannyService GrannyService { get; }
-        public IEnsembleTransactionData TransactionData { get; }
+        public INetworkTransactionData TransactionData { get; }
     }
 }

@@ -17,38 +17,38 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
     public class GrannyService : IGrannyService
     {
         private readonly IServiceProvider serviceProvider;
-        private readonly IDictionary<string, Ensemble> ensembleCache;
+        private readonly IDictionary<string, Network> networkCache;
         private readonly ITransaction transaction;
-        private readonly IEnsembleTransactionService ensembleTransactionService;
+        private readonly INetworkTransactionService networkTransactionService;
         private readonly IValidationClient validationClient;
         private readonly string identityAccessOutBaseUrl;
         private readonly string appUserId;
 
         public GrannyService(
             IServiceProvider serviceProvider,
-            IEnsembleRepository ensembleRepository,
-            IDictionary<string, Ensemble> ensembleCache,
+            INetworkRepository networkRepository,
+            IDictionary<string, Network> networkCache,
             ITransaction transaction,
-            IEnsembleTransactionService ensembleTransactionService,
+            INetworkTransactionService networkTransactionService,
             IValidationClient validationClient,
             string identityAccessOutBaseUrl,
             string appUserId
         )
         {
             AssertionConcern.AssertArgumentNotNull(serviceProvider, nameof(serviceProvider));
-            AssertionConcern.AssertArgumentNotNull(ensembleRepository, nameof(ensembleRepository));
-            AssertionConcern.AssertArgumentNotNull(ensembleCache, nameof(ensembleCache));
+            AssertionConcern.AssertArgumentNotNull(networkRepository, nameof(networkRepository));
+            AssertionConcern.AssertArgumentNotNull(networkCache, nameof(networkCache));
             AssertionConcern.AssertArgumentNotNull(transaction, nameof(transaction));
-            AssertionConcern.AssertArgumentNotNull(ensembleTransactionService, nameof(ensembleTransactionService));
+            AssertionConcern.AssertArgumentNotNull(networkTransactionService, nameof(networkTransactionService));
             AssertionConcern.AssertArgumentNotNull(validationClient, nameof(validationClient));
             AssertionConcern.AssertArgumentNotEmpty(identityAccessOutBaseUrl, "Parameter cannot be null or empty.", nameof(identityAccessOutBaseUrl));
             AssertionConcern.AssertArgumentNotEmpty(appUserId, "Parameter cannot be null or empty.", nameof(appUserId));
 
             this.serviceProvider = serviceProvider;
-            this.EnsembleRepository = ensembleRepository;
-            this.ensembleCache = ensembleCache;
+            this.NetworkRepository = networkRepository;
+            this.networkCache = networkCache;
             this.transaction = transaction;
-            this.ensembleTransactionService = ensembleTransactionService;
+            this.networkTransactionService = networkTransactionService;
             this.validationClient = validationClient;
             this.identityAccessOutBaseUrl = identityAccessOutBaseUrl;
             this.appUserId = appUserId;
@@ -76,19 +76,19 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
 
             if (!boolResult)
             {
-                var instantiatesEnsemble = new Ensemble();
+                var instantiatesNetwork = new Network();
                 grannyResult = this.serviceProvider.GetRequiredService<TWriter>().ParseBuild<
                     TGranny,
                     TWriter,
                     TParameterSet
                 >(
-                    instantiatesEnsemble,
+                    instantiatesNetwork,
                     grannyInfo.Parameters
                 );
 
-                if (instantiatesEnsemble.AnyTransient())
+                if (instantiatesNetwork.AnyTransient())
                 {
-                    var iaeNeurons = instantiatesEnsemble.GetItems<Coding.Neuron>()
+                    var iaeNeurons = instantiatesNetwork.GetItems<Coding.Neuron>()
                         .Where(n => n.IsTransient);
 
                     Guid? appUserGuid = null;
@@ -107,15 +107,15 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
 
                     if (appUserGuid.HasValue)
                     {
-                        await this.EnsembleRepository.UniquifyAsync(
-                            instantiatesEnsemble,
-                            cache: this.ensembleCache
+                        await this.NetworkRepository.UniquifyAsync(
+                            instantiatesNetwork,
+                            cache: this.networkCache
                         );
                         await this.transaction.BeginAsync(appUserGuid.Value);
 
-                        await this.ensembleTransactionService.SaveAsync(
+                        await this.networkTransactionService.SaveAsync(
                             this.transaction,
-                            instantiatesEnsemble
+                            instantiatesNetwork
                         );
 
                         await this.transaction.CommitAsync();
@@ -143,7 +143,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                 TDeductiveReader,
                 TParameterSet
             >(
-                this.EnsembleRepository,
+                this.NetworkRepository,
                 grannyInfo.Parameters,
                 userId
             );
@@ -153,7 +153,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
 
         public IEnumerable<GrannyResult> TryParse<TGranny, TDeductiveReader, TParameterSet, TWriter>(
             IEnumerable<IGrannyInfo<TGranny, TDeductiveReader, TParameterSet, TWriter>> grannyInfos,
-            Ensemble ensemble
+            Network network
         )
             where TGranny : IGranny
             where TDeductiveReader : IGrannyReader<TGranny, TParameterSet>
@@ -164,7 +164,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             foreach (var gi in grannyInfos)
             {
                 var bResult = this.serviceProvider.GetRequiredService<TDeductiveReader>().TryParse(
-                    ensemble,
+                    network,
                     gi.Parameters,
                     out TGranny gResult
                 );
@@ -181,6 +181,6 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             return result.AsEnumerable();
         }
 
-        public IEnsembleRepository EnsembleRepository { get; }
+        public INetworkRepository NetworkRepository { get; }
     }
 }
