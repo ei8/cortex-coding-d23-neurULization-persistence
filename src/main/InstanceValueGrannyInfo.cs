@@ -4,18 +4,18 @@ using ei8.Cortex.Coding.d23.neurULization.Processors.Writers;
 
 namespace ei8.Cortex.Coding.d23.neurULization.Persistence
 {
-    public class ValueGrannyInfo : IGrannyInfo<
-        IValue,
-        IValueReader,
-        IValueParameterSet,
-        IValueWriter
+    public class InstanceValueGrannyInfo : IGrannyInfo<
+        IInstanceValue,
+        IInstanceValueReader,
+        IInstanceValueParameterSet,
+        IInstanceValueWriter
     >
     {
-        public ValueGrannyInfo(IValueParameterSet parameters)
+        public InstanceValueGrannyInfo(IInstanceValueParameterSet parameters)
         {
             this.Parameters = parameters;
         }
 
-        public IValueParameterSet Parameters { get; }
+        public IInstanceValueParameterSet Parameters { get; }
     }
 }

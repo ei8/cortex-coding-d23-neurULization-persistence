@@ -22,7 +22,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             return $"{typeof(TAggregate).FullName}-{propertyName}-{valueId}";
         }
 
-        public static async Task<GrannyResult> TryGetPropertyAssociationFromCacheOrDb<TAggregate>(
+        public static async Task<GrannyResult> TryGetPropertyInstanceValueAssociationFromCacheOrDb<TAggregate>(
             this IGrannyService grannyService,
             IExternalReferenceRepository externalReferenceRepository,
             string propertyName,
@@ -42,8 +42,8 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             if (!propertyAssociationCache.ContainsKey(propertyCacheId))
             {
                 var hasPropertyResult = await grannyService.TryGetParseAsync(
-                    new PropertyAssociationGrannyInfo(
-                        new PropertyAssociationParameterSet(
+                    new PropertyInstanceValueAssociationGrannyInfo(
+                        new PropertyInstanceValueAssociationParameterSet(
                             await externalReferenceRepository.GetByKeyAsync(property),
                             (await grannyService.NetworkRepository.GetByQueryAsync(
                                 new NeuronQuery()

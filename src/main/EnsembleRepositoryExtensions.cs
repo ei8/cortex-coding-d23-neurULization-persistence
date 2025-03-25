@@ -33,8 +33,8 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                 ids.Select(i =>
                 {
                     network.TryGetById(i, out Coding.Neuron valueNeuron);
-                    return new ValueGrannyInfo(
-                        new ValueParameterSet(
+                    return new InstanceValueGrannyInfo(
+                        new InstanceValueParameterSet(
                             valueNeuron,
                             stringNeuron,
                             ValueMatchBy.Tag
