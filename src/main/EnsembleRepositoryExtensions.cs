@@ -5,6 +5,7 @@ using ei8.Cortex.Coding.d23.neurULization.Processors.Readers.Deductive;
 using ei8.Cortex.Library.Common;
 using System.Linq;
 using ei8.Cortex.Coding.Persistence;
+using neurUL.Common.Domain.Model;
 
 namespace ei8.Cortex.Coding.d23.neurULization.Persistence
 {
@@ -19,6 +20,9 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             string userId
         )
         {
+            AssertionConcern.AssertArgumentNotNull(ids, nameof(ids));
+            AssertionConcern.AssertArgumentValid(i => i.Any(), ids, $"Specified value cannot be an empty array.", nameof(ids));
+
             var idsQueryResult = await networkRepository.GetByQueryAsync(
                 new NeuronQuery()
                 {

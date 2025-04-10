@@ -77,13 +77,10 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             if (!boolResult)
             {
                 var instantiatesNetwork = new Network();
-                grannyResult = this.serviceProvider.GetRequiredService<TWriter>().ParseBuild<
-                    TGranny,
-                    TWriter,
-                    TParameterSet
-                >(
+                boolResult = this.serviceProvider.GetRequiredService<TWriter>().TryParseBuild(
                     instantiatesNetwork,
-                    grannyInfo.Parameters
+                    grannyInfo.Parameters,
+                    out grannyResult
                 );
 
                 if (instantiatesNetwork.AnyTransient())
