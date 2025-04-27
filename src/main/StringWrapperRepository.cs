@@ -1,5 +1,6 @@
 ﻿using ei8.Cortex.Coding.Persistence;
 using ei8.Cortex.Coding.Persistence.Wrappers;
+using ei8.Cortex.Coding.Wrappers;
 using ei8.Cortex.Library.Common;
 using ei8.EventSourcing.Client;
 using neurUL.Common.Domain.Model;

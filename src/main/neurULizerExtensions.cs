@@ -1,10 +1,8 @@
-﻿using ei8.Cortex.Coding.d23.Grannies;
-using ei8.Cortex.Coding.Persistence;
+﻿using ei8.Cortex.Coding.Persistence;
 using ei8.Cortex.Coding.Reflection;
 using neurUL.Common.Domain.Model;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace ei8.Cortex.Coding.d23.neurULization.Persistence

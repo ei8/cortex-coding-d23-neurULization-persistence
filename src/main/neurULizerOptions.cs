@@ -13,6 +13,8 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             INetworkRepository networkRepository, 
             Coding.d23.neurULization.Processors.Writers.IInstanceWriter instanceWriter,
             Coding.d23.neurULization.Processors.Readers.Inductive.IInstanceReader inductiveInstanceReader,
+            Coding.d23.neurULization.Processors.Writers.IIdInstanceValueWriter idInstanceValueWriter,
+            Coding.d23.neurULization.Processors.Readers.Inductive.IInstanceValueReader inductiveInstanceValueReader,
             IExternalReferenceSet externalReferences, 
             IDictionary<string, Network> networkCache,
             IGrannyService grannyService,
@@ -23,6 +25,8 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             AssertionConcern.AssertArgumentNotNull(networkRepository, nameof(networkRepository));
             AssertionConcern.AssertArgumentNotNull(instanceWriter, nameof(instanceWriter));
             AssertionConcern.AssertArgumentNotNull(inductiveInstanceReader, nameof(inductiveInstanceReader));
+            AssertionConcern.AssertArgumentNotNull(idInstanceValueWriter, nameof(idInstanceValueWriter));
+            AssertionConcern.AssertArgumentNotNull(inductiveInstanceValueReader, nameof(inductiveInstanceValueReader));
             AssertionConcern.AssertArgumentNotNull(externalReferences, nameof(externalReferences));
             AssertionConcern.AssertArgumentNotNull(networkCache, nameof(networkCache));
             AssertionConcern.AssertArgumentNotNull(grannyService, nameof(grannyService));
@@ -32,6 +36,8 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             this.NetworkRepository = networkRepository;
             this.InstanceWriter = instanceWriter;
             this.InductiveInstanceReader = inductiveInstanceReader;
+            this.IdInstanceValueWriter = idInstanceValueWriter;
+            this.InductiveInstanceValueReader = inductiveInstanceValueReader;
             this.ExternalReferences = externalReferences;
             this.NetworkCache = networkCache;
             this.GrannyService = grannyService;
@@ -42,6 +48,8 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         public INetworkRepository NetworkRepository { get; }
         public IInstanceWriter InstanceWriter { get; }
         public IInstanceReader InductiveInstanceReader { get; }
+        public IIdInstanceValueWriter IdInstanceValueWriter { get; }
+        public IInstanceValueReader InductiveInstanceValueReader { get; }
         public IExternalReferenceSet ExternalReferences { get; }
         public IDictionary<string, Network> NetworkCache { get; }
         public IGrannyService GrannyService { get; }
