@@ -11,8 +11,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         public static async Task<Tuple<bool, TGranny>> TryGetParseAsync<TGranny, TDeductiveReader, TParameterSet>(
             this TDeductiveReader processor,
             INetworkRepository networkRepository,
-            TParameterSet parameters,
-            string userId
+            TParameterSet parameters
         )
             where TGranny : IGranny
             where TDeductiveReader : Coding.d23.neurULization.Processors.Readers.Deductive.IGrannyReader<TGranny, TParameterSet>
@@ -25,8 +24,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             bool result = await queries.Process(
                     networkRepository,
                     network,
-                    new List<IGranny>(),
-                    userId
+                    new List<IGranny>()
                 );
             
             result = result && processor.TryParse(

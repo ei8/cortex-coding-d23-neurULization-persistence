@@ -45,7 +45,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             this.grannyService = grannyService;
         }
 
-        public async Task<IEnumerable<StringWrapper>> GetByIds(IEnumerable<Guid> ids, string userId, CancellationToken token = default)
+        public async Task<IEnumerable<StringWrapper>> GetByIds(IEnumerable<Guid> ids, CancellationToken token = default)
         {
             var neurons = new QueryResult<Library.Common.Neuron>();
 
@@ -69,15 +69,14 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                 new NeuronQuery()
                 {
                     Id = ids.Select(i => i.ToString()),
-                    Postsynaptic = new string[] {
+                    Postsynaptic = new[] {
                         instantiatesStringResult.Item2.Neuron.Id.ToString()
                     },
                     SortBy = SortByValue.NeuronCreationTimestamp,
                     SortOrder = SortOrderValue.Descending,
                     Depth = Constants.InstanceToValueInstantiatesClassDepth,
                     DirectionValues = DirectionValues.Outbound
-                },
-                userId
+                }
             );
 
             return await this.neurULizer.DeneurULizeAsync<StringWrapper>(queryResult.Network);

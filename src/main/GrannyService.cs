@@ -127,8 +127,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         }
 
         public async Task<GrannyResult> TryGetParseAsync<TGranny, TDeductiveReader, TParameterSet, TWriter>(
-            IGrannyInfo<TGranny, TDeductiveReader, TParameterSet, TWriter> grannyInfo,
-            string userId = default
+            IGrannyInfo<TGranny, TDeductiveReader, TParameterSet, TWriter> grannyInfo
         )
             where TGranny : IGranny
             where TDeductiveReader : Processors.Readers.Deductive.IGrannyReader<TGranny, TParameterSet>
@@ -141,8 +140,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                 TParameterSet
             >(
                 this.NetworkRepository,
-                grannyInfo.Parameters,
-                userId
+                grannyInfo.Parameters
             );
 
             return new GrannyResult(result.Item1, result.Item2);

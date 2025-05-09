@@ -1,6 +1,9 @@
-﻿using ei8.Cortex.Coding.Persistence;
+﻿using ei8.Cortex.Coding.d23.Grannies;
+using ei8.Cortex.Coding.Persistence;
 using ei8.Cortex.Coding.Reflection;
+using ei8.Cortex.Library.Common;
 using neurUL.Common.Domain.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -35,7 +38,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                 .Select(gp => gp.Value);
 
             var idPropertyValueNeurons = (await options.NetworkRepository.GetByQueryAsync(
-                    new Library.Common.NeuronQuery()
+                    new NeuronQuery()
                     {
                         Id = valueNeuronIds
                     },
@@ -108,6 +111,44 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                 instanceNeurons,
                 typeInfo,
                 externalReferences
+            );
+        }
+
+        public static async Task<IEnumerable<GrannyResult>> TryGetStringValues(
+            this IneurULizer neurULizer,
+            Network network,
+            IEnumerable<Guid> ids
+        )
+        {
+            AssertionConcern.AssertArgumentNotNull(ids, nameof(ids));
+            AssertionConcern.AssertArgumentValid(i => i.Any(), ids, $"Specified value cannot be an empty array.", nameof(ids));
+
+            var options = (neurULizerOptions) neurULizer.Options;
+
+            var idsQueryResult = await options.NetworkRepository.GetByQueryAsync(
+                new NeuronQuery()
+                {
+                    Id = ids.Select(i => i.ToString()),
+                    Depth = Coding.d23.neurULization.Constants.ValueToInstantiatesClassDepth,
+                    DirectionValues = DirectionValues.Outbound
+                }
+            );
+            var stringNeuron = await options.ExternalReferenceRepository.GetByKeyAsync(typeof(string));
+
+            IInstanceValue parseResult = null;
+            return ids.Select(id =>
+                new GrannyResult(
+                    network.TryGetById(id, out Coding.Neuron instanceValueGrannyNeuron) &&
+                    options.InductiveInstanceValueReader.TryParse(
+                        idsQueryResult.Network,
+                        new Processors.Readers.Inductive.InstanceValueParameterSet(
+                            instanceValueGrannyNeuron,
+                            stringNeuron
+                        ),
+                        out parseResult
+                    ),
+                    parseResult
+                )
             );
         }
     }

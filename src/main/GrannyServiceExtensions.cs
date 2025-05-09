@@ -48,7 +48,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                             (await grannyService.NetworkRepository.GetByQueryAsync(
                                 new NeuronQuery()
                                 {
-                                    Id = new string[] { valueId.ToString() }
+                                    Id = new[] { valueId.ToString() }
                                 },
                                 false
                             )).Network.GetItems<Coding.Neuron>().Single(),
