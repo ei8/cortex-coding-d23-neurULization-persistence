@@ -1,11 +1,11 @@
-﻿using ei8.Cortex.Coding.d23.Grannies;
-using ei8.Cortex.Coding.Persistence;
+﻿using ei8.Cortex.Coding.Persistence;
 using ei8.Cortex.Coding.Reflection;
 using ei8.Cortex.Library.Common;
 using neurUL.Common.Domain.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ei8.Cortex.Coding.d23.neurULization.Persistence
@@ -21,7 +21,8 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         /// <returns></returns>
         public static async Task<Network> neurULizeAsync<TValue>(
             this IneurULizer neurULizer,
-            TValue value
+            TValue value,            
+            CancellationToken token = default
         )
             where TValue : class
         {
@@ -29,7 +30,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             var options = (neurULizerOptions) neurULizer.Options;
 
             // use key to retrieve external reference url from library
-            var externalReferences = await options.ExternalReferenceRepository.GetByKeysAsync(
+            var mirrors = await options.MirrorRepository.GetByKeysAsync(
                 typeInfo.Keys.Except(new[] { string.Empty }).ToArray()
             );
 
@@ -54,7 +55,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                 value,
                 typeInfo,
                 idPropertyValueNeurons,
-                externalReferences
+                mirrors
             );
 
             await options.NetworkRepository.UniquifyAsync(
@@ -73,9 +74,11 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         /// <param name="neurULizer"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static async Task<IEnumerable<TValue>> DeneurULizeAsync<TValue>(
+        public static async Task<IEnumerable<neurULizationResult<TValue>>> DeneurULizeAsync<TValue>(
             this IneurULizer neurULizer,
-            Network value
+            Network value,
+            IInstanceNeuronsRetriever instanceNeuronsRetriever,
+            CancellationToken token = default
         )
             where TValue : class, new()
         {
@@ -83,73 +86,28 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             var options = (neurULizerOptions) neurULizer.Options;
 
             // use key to retrieve external reference url from library
-            var externalReferences = await options.ExternalReferenceRepository.GetByKeysAsync(
+            var mirrors = await options.MirrorRepository.GetByKeysAsync(
                 typeInfo.Keys.Except(new[] { string.Empty }).ToArray()
             );
 
-            // TODO: use GrannyCacheService
-            var instantiatesClassResult = await options.GrannyService.TryGetParseBuildPersistAsync(
-                new InstantiatesClassGrannyInfo(
-                    new Coding.d23.neurULization.Processors.Readers.Deductive.InstantiatesClassParameterSet(
-                        await options.ExternalReferenceRepository.GetByKeyAsync(
-                            typeof(TValue)
-                        )
-                    )
-                )
-            // TODO: add support for CancellationToken
-            );
+            var instanceNeurons = await instanceNeuronsRetriever.GetInstanceNeuronsAsync<TValue>(value, token);
 
-            AssertionConcern.AssertStateTrue(
-                instantiatesClassResult.Item1,
-                $"'Instantiates^Avatar' is required to invoke {nameof(IneurULizer.DeneurULize)}"
-            );
-
-            var instanceNeurons = value.GetPresynapticNeurons(instantiatesClassResult.Item2.Neuron.Id);
-
-            return neurULizer.DeneurULize<TValue>(
+            var result = neurULizer.DeneurULize<TValue>(
                 value, 
                 instanceNeurons,
                 typeInfo,
-                externalReferences
+                mirrors
             );
-        }
 
-        public static async Task<IEnumerable<GrannyResult>> TryGetStringValues(
-            this IneurULizer neurULizer,
-            Network network,
-            IEnumerable<Guid> ids
-        )
-        {
-            AssertionConcern.AssertArgumentNotNull(ids, nameof(ids));
-            AssertionConcern.AssertArgumentValid(i => i.Any(), ids, $"Specified value cannot be an empty array.", nameof(ids));
+            var failedInstances = result.Where(r => !r.Success);
 
-            var options = (neurULizerOptions) neurULizer.Options;
-
-            var idsQueryResult = await options.NetworkRepository.GetByQueryAsync(
-                new NeuronQuery()
-                {
-                    Id = ids.Select(i => i.ToString()),
-                    Depth = Coding.d23.neurULization.Constants.ValueToInstantiatesClassDepth,
-                    DirectionValues = DirectionValues.Outbound
-                }
+            AssertionConcern.AssertStateTrue(
+                !failedInstances.Any(),
+                $"Failed deneurULizing instances with IDs: " +
+                $"'{string.Join(", ", failedInstances.Select(i => i.InstanceNeuron.Id))}'."
             );
-            var stringNeuron = await options.ExternalReferenceRepository.GetByKeyAsync(typeof(string));
 
-            IInstanceValue parseResult = null;
-            return ids.Select(id =>
-                new GrannyResult(
-                    network.TryGetById(id, out Coding.Neuron instanceValueGrannyNeuron) &&
-                    options.InductiveInstanceValueReader.TryParse(
-                        idsQueryResult.Network,
-                        new Processors.Readers.Inductive.InstanceValueParameterSet(
-                            instanceValueGrannyNeuron,
-                            stringNeuron
-                        ),
-                        out parseResult
-                    ),
-                    parseResult
-                )
-            );
+            return result;
         }
     }
 }

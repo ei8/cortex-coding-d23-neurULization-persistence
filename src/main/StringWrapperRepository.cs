@@ -17,75 +17,61 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         private readonly ITransaction transaction;
         private readonly INetworkTransactionService networkTransactionService;
         private readonly IneurULizer neurULizer;
-        private readonly IExternalReferenceRepository externalReferenceRepository;
         private readonly INetworkRepository networkRepository;
-        private readonly IGrannyService grannyService;
+        private readonly IIdInstanceNeuronsRetriever idInstanceNeuronsRetriever;
 
         public StringWrapperRepository(
             ITransaction transaction,
             INetworkTransactionService networkTransactionService,
             IneurULizer neurULizer,
-            IExternalReferenceRepository externalReferenceRepository,
             INetworkRepository networkRepository,
-            IGrannyService grannyService
+            IIdInstanceNeuronsRetriever idInstanceNeuronsRetriever
         )
         {
             AssertionConcern.AssertArgumentNotNull(transaction, nameof(transaction));
             AssertionConcern.AssertArgumentNotNull(networkTransactionService, nameof(networkTransactionService));
             AssertionConcern.AssertArgumentNotNull(neurULizer, nameof(neurULizer));
-            AssertionConcern.AssertArgumentNotNull(externalReferenceRepository, nameof(externalReferenceRepository));
             AssertionConcern.AssertArgumentNotNull(networkRepository, nameof(networkRepository));
-            AssertionConcern.AssertArgumentNotNull(grannyService, nameof(grannyService));
+            AssertionConcern.AssertArgumentNotNull(idInstanceNeuronsRetriever, nameof(idInstanceNeuronsRetriever));
 
             this.transaction = transaction;
             this.networkTransactionService = networkTransactionService;
             this.neurULizer = neurULizer;
-            this.externalReferenceRepository = externalReferenceRepository;
             this.networkRepository = networkRepository;
-            this.grannyService = grannyService;
+            this.idInstanceNeuronsRetriever = idInstanceNeuronsRetriever;
         }
 
         public async Task<IEnumerable<StringWrapper>> GetByIds(IEnumerable<Guid> ids, CancellationToken token = default)
         {
-            var neurons = new QueryResult<Library.Common.Neuron>();
+            AssertionConcern.AssertArgumentNotNull(ids, nameof(ids));
+            AssertionConcern.AssertArgumentValid(i => i.Any(), ids, $"Specified value cannot be an empty array.", nameof(ids));
 
-            var instantiatesStringResult = await this.grannyService.TryGetParseBuildPersistAsync(
-                new InstantiatesClassGrannyInfo(
-                    new Coding.d23.neurULization.Processors.Readers.Deductive.InstantiatesClassParameterSet(
-                        await this.externalReferenceRepository.GetByKeyAsync(
-                            typeof(string)
-                        )
-                    )
-                ),
-                token
-            );
-
-            AssertionConcern.AssertStateTrue(
-                instantiatesStringResult.Item1,
-                $"'Instantiates^String' is required to invoke {nameof(StringWrapperRepository.GetByIds)}"
-            );
-
-            var queryResult = await networkRepository.GetByQueryAsync(
+            var queryResult = await this.networkRepository.GetByQueryAsync(
                 new NeuronQuery()
                 {
                     Id = ids.Select(i => i.ToString()),
-                    Postsynaptic = new[] {
-                        instantiatesStringResult.Item2.Neuron.Id.ToString()
-                    },
-                    SortBy = SortByValue.NeuronCreationTimestamp,
-                    SortOrder = SortOrderValue.Descending,
-                    Depth = Constants.InstanceToValueInstantiatesClassDepth,
+                    Depth = Coding.d23.neurULization.Constants.ValueToInstantiatesClassDepth,
                     DirectionValues = DirectionValues.Outbound
                 }
             );
 
-            return await this.neurULizer.DeneurULizeAsync<StringWrapper>(queryResult.Network);
+            queryResult.Network.ValidateIds(ids);
+
+            this.idInstanceNeuronsRetriever.Initialize(ids);
+            return (await this.neurULizer.DeneurULizeAsync<StringWrapper>(
+                queryResult.Network, 
+                this.idInstanceNeuronsRetriever,
+                token
+            )).Select(nr => nr.Result);
         }
 
         public async Task Save(StringWrapper stringValue, CancellationToken token = default)
         {
             // TODO: handle updates - message.Version == 0 ? WriteMode.Create : WriteMode.Update
-            var me = await this.neurULizer.neurULizeAsync(stringValue);
+            var me = await this.neurULizer.neurULizeAsync(
+                stringValue,
+                token
+            );
 
             await this.networkTransactionService.SaveAsync(this.transaction, me);
         }

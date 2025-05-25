@@ -1,5 +1,6 @@
 ﻿using ei8.Cortex.Coding.d23.Grannies;
 using ei8.Cortex.Coding.d23.neurULization.Processors.Readers.Deductive;
+using ei8.Cortex.Coding.d23.neurULization.Processors.Writers;
 using ei8.Cortex.Coding.Persistence;
 using ei8.Cortex.Coding.Properties;
 using ei8.Cortex.Library.Common;
@@ -14,7 +15,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
 {
     public static class GrannyServiceExtensions
     {
-        private static string CreateCacheId<TAggregate>(string propertyName, Guid valueId)
+        private static string CreatePropertyCacheId<TAggregate>(string propertyName, Guid valueId)
         {
             AssertionConcern.AssertArgumentNotEmpty(propertyName, "Parameter cannot be null or empty.", nameof(propertyName));
             AssertionConcern.AssertArgumentValid(id => id != Guid.Empty, valueId, $"Parameter cannot be equal to '{Guid.Empty}", nameof(valueId));
@@ -22,50 +23,119 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             return $"{typeof(TAggregate).FullName}-{propertyName}-{valueId}";
         }
 
-        public static async Task<GrannyResult> TryGetPropertyInstanceValueAssociationFromCacheOrDb<TAggregate>(
+        public static async Task<GrannyResult> TryGetPropertyValueAssociationFromCacheOrDb<TAggregate>(
             this IGrannyService grannyService,
-            IExternalReferenceRepository externalReferenceRepository,
+            IMirrorRepository mirrorRepository,
+            INetworkRepository networkRepository,
             string propertyName,
             Guid valueId,
-            IDictionary<string, IGranny> propertyAssociationCache
+            IDictionary<string, IGranny> propertyCache
         )
         {
+            return await TryGetPropertyFromCacheOrDbCore<
+                TAggregate,
+                PropertyValueAssociationGrannyInfo,
+                IPropertyValueAssociation,
+                IPropertyValueAssociationReader,
+                IPropertyValueAssociationParameterSet,
+                IPropertyValueAssociationWriter
+            >
+            (
+                grannyService, 
+                propertyName, 
+                valueId, 
+                async (propertyKey) => new PropertyValueAssociationGrannyInfo(
+                    new PropertyValueAssociationParameterSet(
+                        await mirrorRepository.GetByKeyAsync(propertyKey),
+                        (await networkRepository.GetByQueryAsync(
+                            new NeuronQuery()
+                            {
+                                Id = new[] { valueId.ToString() }
+                            },
+                            false
+                        )).Network.GetItems<Coding.Neuron>().Single()
+                    )
+                ),
+                propertyCache
+            );
+        }
+
+        // TODO:1 See if possible to transfer this method inside DeneurULize
+        // so it can be called instead of this method
+        private static async Task<GrannyResult> TryGetPropertyFromCacheOrDbCore<TAggregate, TGrannyInfo, TGranny, TDeductiveReader, TParameterSet, TWriter>(
+            IGrannyService grannyService, 
+            string propertyName, 
+            Guid valueId, 
+            Func<PropertyInfo, Task<TGrannyInfo>> grannyInfoCreator,
+            IDictionary<string, IGranny> propertyCache
+        )
+            where TGrannyInfo : IGrannyInfo<TGranny, TDeductiveReader, TParameterSet, TWriter>
+            where TGranny : IGranny
+            where TDeductiveReader : Processors.Readers.Deductive.IGrannyReader<TGranny, TParameterSet>
+            where TParameterSet : Processors.Readers.Deductive.IDeductiveParameterSet
+            where TWriter : Cortex.Coding.d23.neurULization.Processors.Writers.IGrannyWriter<TGranny, TParameterSet>
+        {
             AssertionConcern.AssertArgumentNotEmpty(propertyName, "Specified parameter cannot be null or empty.",
-                nameof(propertyName));
+                            nameof(propertyName));
             var property = typeof(TAggregate).GetProperty(propertyName);
-            var classAttribute = property.GetCustomAttributes<neurULClassAttribute>().SingleOrDefault();
-            AssertionConcern.AssertArgumentValid(ca => ca != null, classAttribute, $"Specified property should have a '{nameof(neurULClassAttribute)}'.", nameof(propertyName));
+            var propertyCacheId = GrannyServiceExtensions.CreatePropertyCacheId<TAggregate>(propertyName, valueId);
+            var result = new GrannyResult(false, null);
 
-            var propertyCacheId = GrannyServiceExtensions.CreateCacheId<TAggregate>(propertyName, valueId);
-            GrannyResult result = new GrannyResult(false, null);
-
-            if (!propertyAssociationCache.ContainsKey(propertyCacheId))
+            if (!propertyCache.ContainsKey(propertyCacheId))
             {
-                var hasPropertyResult = await grannyService.TryGetParseAsync(
-                    new PropertyInstanceValueAssociationGrannyInfo(
+                var hasPropertyResult = await grannyService.TryGetParseAsync(await grannyInfoCreator(property));
+
+                if (hasPropertyResult.Success)
+                    propertyCache.Add(propertyCacheId, hasPropertyResult.Granny);
+            }
+
+            if (propertyCache.ContainsKey(propertyCacheId))
+                result = new GrannyResult(true, propertyCache[propertyCacheId]);
+
+            return result;
+        }
+
+        public static async Task<GrannyResult> TryGetPropertyInstanceValueAssociationFromCacheOrDb<TAggregate>(
+            this IGrannyService grannyService,
+            IMirrorRepository mirrorRepository,
+            INetworkRepository networkRepository,
+            string propertyName,
+            Guid valueId,
+            IDictionary<string, IGranny> propertyCache
+        )
+        {
+            return await TryGetPropertyFromCacheOrDbCore<
+                TAggregate,
+                PropertyInstanceValueAssociationGrannyInfo,
+                IPropertyInstanceValueAssociation,
+                IPropertyInstanceValueAssociationReader,
+                IPropertyInstanceValueAssociationParameterSet,
+                IPropertyInstanceValueAssociationWriter
+            >
+            (
+                grannyService,
+                propertyName,
+                valueId,
+                async (propertyKey) => {
+                    var classAttribute = propertyKey.GetCustomAttributes<neurULClassAttribute>().SingleOrDefault();
+                    AssertionConcern.AssertArgumentValid(ca => ca != null, classAttribute, $"Specified property should have a '{nameof(neurULClassAttribute)}'.", nameof(propertyName));
+                    return new PropertyInstanceValueAssociationGrannyInfo(
                         new PropertyInstanceValueAssociationParameterSet(
-                            await externalReferenceRepository.GetByKeyAsync(property),
-                            (await grannyService.NetworkRepository.GetByQueryAsync(
+                            await mirrorRepository.GetByKeyAsync(propertyKey),
+                            (await networkRepository.GetByQueryAsync(
                                 new NeuronQuery()
                                 {
                                     Id = new[] { valueId.ToString() }
                                 },
                                 false
                             )).Network.GetItems<Coding.Neuron>().Single(),
-                            await externalReferenceRepository.GetByKeyAsync(classAttribute.Type),
+                            await mirrorRepository.GetByKeyAsync(classAttribute.Type),
                             ValueMatchBy.Id
                         )
-                    )
-                );
-
-                if (hasPropertyResult.Success)
-                    propertyAssociationCache.Add(propertyCacheId, hasPropertyResult.Granny);
-            }
-
-            if (propertyAssociationCache.ContainsKey(propertyCacheId))
-                result = new GrannyResult(true, propertyAssociationCache[propertyCacheId]);
-
-            return result;
+                    );
+                },
+                propertyCache
+            );
         }
     }
 }
