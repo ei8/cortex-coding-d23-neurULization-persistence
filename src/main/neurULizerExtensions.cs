@@ -46,15 +46,16 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                     false
                 ))
                 .Network.GetItems<Neuron>()
-                .ToDictionary(n => n.Id);
+                .ToList();
 
-            foreach (var stn in options.TransactionData.SavedTransientNeurons)
-                idPropertyValueNeurons.Add(stn.Id, stn);
+            idPropertyValueNeurons.AddRange(
+                options.TransactionData.SavedTransientNeurons
+            );
 
             var result = neurULizer.neurULize(
                 value,
-                typeInfo,
                 idPropertyValueNeurons,
+                typeInfo,
                 mirrors
             );
 
