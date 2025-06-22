@@ -58,5 +58,25 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                 kvpE => kvpE.Value
             );
         }
+
+        public static async Task<IMirrorSet> CreateMirrorSet(this IMirrorRepository mirrorRepository)
+        {
+            IMirrorSet result = null;
+
+            var d23Keys = typeof(MirrorSet).GetProperties().Select(p => p.Name);
+            var refs = await mirrorRepository.GetByKeysAsync(d23Keys, false);
+            if (refs.Any() && d23Keys.Count() == refs.Count())
+            {
+                result = new MirrorSet();
+
+                foreach (var pk in d23Keys)
+                    result.GetType().GetProperty(pk.ToString()).SetValue(
+                        result,
+                        refs[pk]
+                    );
+            }
+
+            return result;
+        }
     }
 }
