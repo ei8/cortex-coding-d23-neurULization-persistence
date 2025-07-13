@@ -59,8 +59,8 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                 mirrors
             );
 
-            await options.NetworkRepository.UniquifyAsync(
-                result,
+            await result.UniquifyAsync(
+                options.NetworkRepository,
                 options.TransactionData,
                 options.NetworkCache
             );

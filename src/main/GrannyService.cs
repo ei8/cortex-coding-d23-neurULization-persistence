@@ -104,8 +104,8 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
 
                     if (appUserGuid.HasValue)
                     {
-                        await this.NetworkRepository.UniquifyAsync(
-                            instantiatesNetwork,
+                        await instantiatesNetwork.UniquifyAsync(
+                            this.NetworkRepository,
                             cache: this.networkCache
                         );
                         await this.transaction.BeginAsync(appUserGuid.Value);
