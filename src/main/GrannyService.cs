@@ -105,7 +105,10 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                     if (appUserGuid.HasValue)
                     {
                         await instantiatesNetwork.UniquifyAsync(
-                            this.NetworkRepository,
+                            persistentIdenticalNeuronRetriever: (t, ps) => 
+                                this.NetworkRepository.GetPersistentIdenticalNeuron(t, ps),
+                            persistentIdenticalNeuronTerminalRetriever: (pre, post) => 
+                                this.NetworkRepository.GetPersistentIdenticalNeuronTerminal(pre, post),
                             cache: this.networkCache
                         );
                         await this.transaction.BeginAsync(appUserGuid.Value);

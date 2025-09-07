@@ -2,6 +2,7 @@
 using ei8.Cortex.Coding.Reflection;
 using ei8.Cortex.Library.Common;
 using neurUL.Common.Domain.Model;
+using neurUL.Cortex.Domain.Model.Neurons;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -60,8 +61,9 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             );
 
             await result.UniquifyAsync(
-                options.NetworkRepository,
                 options.TransactionData,
+                async (ct, cpis) => await options.NetworkRepository.GetPersistentIdenticalNeuron(ct, cpis),
+                async (pre, post) => await options.NetworkRepository.GetPersistentIdenticalNeuronTerminal(pre, post),
                 options.NetworkCache
             );
 
