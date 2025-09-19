@@ -1,7 +1,6 @@
 ﻿using ei8.Cortex.Coding.d23.Grannies;
 using ei8.Cortex.Coding.d23.neurULization.Processors.Readers.Deductive;
 using ei8.Cortex.Coding.d23.neurULization.Processors.Writers;
-using ei8.Cortex.Coding.Persistence;
 using ei8.Cortex.Coding.Properties;
 using ei8.Cortex.Library.Common;
 using neurUL.Common.Domain.Model;
@@ -13,6 +12,9 @@ using System.Threading.Tasks;
 
 namespace ei8.Cortex.Coding.d23.neurULization.Persistence
 {
+    /// <summary>
+    /// Represents GrannyService extension methods.
+    /// </summary>
     public static class GrannyServiceExtensions
     {
         private static string CreatePropertyCacheId<TAggregate>(string propertyName, Guid valueId)
@@ -23,46 +25,66 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             return $"{typeof(TAggregate).FullName}-{propertyName}-{valueId}";
         }
 
-        public static async Task<GrannyResult> TryGetPropertyValueAssociationFromCacheOrDb<TAggregate>(
+        /// <summary>
+        /// Tries to obtain PropertyValueAssociations from the specified cache or from persistence.
+        /// </summary>
+        /// <typeparam name="TAggregate"></typeparam>
+        /// <param name="grannyService"></param>
+        /// <param name="mirrorRepository"></param>
+        /// <param name="networkRepository"></param>
+        /// <param name="propertyName"></param>
+        /// <param name="valueIds"></param>
+        /// <param name="propertyCache"></param>
+        /// <returns></returns>
+        public static async Task<IEnumerable<GrannyResult>> TryObtainPropertyValueAssociations<TAggregate>(
             this IGrannyService grannyService,
             IMirrorRepository mirrorRepository,
             INetworkRepository networkRepository,
             string propertyName,
-            Guid valueId,
+            IEnumerable<Guid> valueIds,
             IDictionary<string, IGranny> propertyCache
         )
         {
-            return await TryGetPropertyFromCacheOrDbCore<
-                TAggregate,
-                PropertyValueAssociationGrannyInfo,
-                IPropertyValueAssociation,
-                IPropertyValueAssociationReader,
-                IPropertyValueAssociationParameterSet,
-                IPropertyValueAssociationWriter
-            >
-            (
-                grannyService, 
-                propertyName, 
-                valueId, 
-                async (propertyKey) => new PropertyValueAssociationGrannyInfo(
-                    new PropertyValueAssociationParameterSet(
-                        await mirrorRepository.GetByKeyAsync(propertyKey),
-                        (await networkRepository.GetByQueryAsync(
-                            new NeuronQuery()
-                            {
-                                Id = new[] { valueId.ToString() }
-                            },
-                            false
-                        )).Network.GetItems<Coding.Neuron>().Single()
-                    )
-                ),
-                propertyCache
-            );
+            var valueNeurons = (await networkRepository.GetByQueryAsync(
+                new NeuronQuery()
+                {
+                    Id = valueIds.Select(vi => vi.ToString())
+                },
+                false
+            )).Network.GetItems<Coding.Neuron>();
+
+            var results = new List<GrannyResult>();
+
+            foreach (var vn in valueNeurons)
+            {
+                results.Add(await GrannyServiceExtensions.TryObtainPropertiesCore<
+                    TAggregate,
+                    PropertyValueAssociationGrannyInfo,
+                    IPropertyValueAssociation,
+                    IPropertyValueAssociationReader,
+                    IPropertyValueAssociationParameterSet,
+                    IPropertyValueAssociationWriter
+                >
+                (
+                    grannyService,
+                    propertyName,
+                    vn.Id,
+                    async (propertyKey) => new PropertyValueAssociationGrannyInfo(
+                        new PropertyValueAssociationParameterSet(
+                            await mirrorRepository.GetByKeyAsync(propertyKey),
+                            vn
+                        )
+                    ),
+                    propertyCache
+                ));
+            }
+
+            return results;
         }
 
         // TODO:1 See if possible to transfer this method inside DeneurULize
         // so it can be called instead of this method
-        private static async Task<GrannyResult> TryGetPropertyFromCacheOrDbCore<TAggregate, TGrannyInfo, TGranny, TDeductiveReader, TParameterSet, TWriter>(
+        private static async Task<GrannyResult> TryObtainPropertiesCore<TAggregate, TGrannyInfo, TGranny, TDeductiveReader, TParameterSet, TWriter>(
             IGrannyService grannyService, 
             string propertyName, 
             Guid valueId, 
@@ -78,9 +100,9 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             AssertionConcern.AssertArgumentNotEmpty(propertyName, "Specified parameter cannot be null or empty.",
                             nameof(propertyName));
             var property = typeof(TAggregate).GetProperty(propertyName);
-            var propertyCacheId = GrannyServiceExtensions.CreatePropertyCacheId<TAggregate>(propertyName, valueId);
-            var result = new GrannyResult(false, null);
+            var result = new GrannyResult(valueId, false, null);
 
+            var propertyCacheId = GrannyServiceExtensions.CreatePropertyCacheId<TAggregate>(propertyName, valueId);
             if (!propertyCache.ContainsKey(propertyCacheId))
             {
                 var hasPropertyResult = await grannyService.TryGetParseAsync(await grannyInfoCreator(property));
@@ -90,12 +112,23 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             }
 
             if (propertyCache.ContainsKey(propertyCacheId))
-                result = new GrannyResult(true, propertyCache[propertyCacheId]);
+                result = new GrannyResult(valueId, true, propertyCache[propertyCacheId]);
 
             return result;
         }
 
-        public static async Task<GrannyResult> TryGetPropertyInstanceValueAssociationFromCacheOrDb<TAggregate>(
+        /// <summary>
+        /// Tries to obtain PropertyInstanceValueAssociations from the specified cache or from persistence.
+        /// </summary>
+        /// <typeparam name="TAggregate"></typeparam>
+        /// <param name="grannyService"></param>
+        /// <param name="mirrorRepository"></param>
+        /// <param name="networkRepository"></param>
+        /// <param name="propertyName"></param>
+        /// <param name="valueId"></param>
+        /// <param name="propertyCache"></param>
+        /// <returns></returns>
+        public static async Task<GrannyResult> TryObtainPropertyInstanceValueAssociations<TAggregate>(
             this IGrannyService grannyService,
             IMirrorRepository mirrorRepository,
             INetworkRepository networkRepository,
@@ -104,7 +137,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             IDictionary<string, IGranny> propertyCache
         )
         {
-            return await TryGetPropertyFromCacheOrDbCore<
+            return await GrannyServiceExtensions.TryObtainPropertiesCore<
                 TAggregate,
                 PropertyInstanceValueAssociationGrannyInfo,
                 IPropertyInstanceValueAssociation,

@@ -33,13 +33,13 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             );
 
             AssertionConcern.AssertStateTrue(
-                instantiatesClassResult.Item1,
+                instantiatesClassResult.Success,
                 $"InstantiatesClass Granny is required to invoke {nameof(IneurULizer.DeneurULize)}"
             );
 
             this.@class = null;
 
-            return value.GetPresynapticNeurons(instantiatesClassResult.Item2.Neuron.Id);
+            return value.GetPresynapticNeurons(instantiatesClassResult.Granny.Neuron.Id);
         }
 
         public void Initialize(Neuron value)

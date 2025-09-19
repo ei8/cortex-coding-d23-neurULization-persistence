@@ -1,43 +1,56 @@
-﻿using ei8.Cortex.Coding.Persistence;
-using ei8.Cortex.Coding.Persistence.Versioning;
+﻿using ei8.Cortex.Coding.Persistence.Versioning;
 using ei8.Cortex.Coding.Versioning;
 using ei8.Cortex.Library.Common;
-using ei8.EventSourcing.Client;
 using neurUL.Common.Domain.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using static SQLite.SQLite3;
 
 namespace ei8.Cortex.Coding.d23.neurULization.Persistence.Versioning
 {
+    /// <summary>
+    /// Represents a Snapshot (read-only) repository.
+    /// </summary>
     public class SnapshotReadRepository : ISnapshotReadRepository
     {
         private readonly IneurULizer neurULizer;
         private readonly INetworkRepository networkRepository;
         private readonly IIdInstanceNeuronsRetriever idInstanceNeuronsRetriever;
-        private readonly Network readNetworkCache;
+        private readonly INetworkDictionary<CacheKey> readWriteCache;
 
+        /// <summary>
+        /// Constructs a Snapshot (read-only) repository.
+        /// </summary>
+        /// <param name="neurULizer"></param>
+        /// <param name="networkRepository"></param>
+        /// <param name="idInstanceNeuronsRetriever"></param>
+        /// <param name="readWriteCache"></param>
         public SnapshotReadRepository(
             IneurULizer neurULizer,
             INetworkRepository networkRepository,
             IIdInstanceNeuronsRetriever idInstanceNeuronsRetriever,
-            Network readNetworkCache
+            INetworkDictionary<CacheKey> readWriteCache
         )
         {
             AssertionConcern.AssertArgumentNotNull(neurULizer, nameof(neurULizer));
             AssertionConcern.AssertArgumentNotNull(networkRepository, nameof(networkRepository));
             AssertionConcern.AssertArgumentNotNull(idInstanceNeuronsRetriever, nameof(idInstanceNeuronsRetriever));
-            AssertionConcern.AssertArgumentNotNull(readNetworkCache, nameof(readNetworkCache));
+            AssertionConcern.AssertArgumentNotNull(readWriteCache, nameof(readWriteCache));
 
             this.neurULizer = neurULizer;
             this.networkRepository = networkRepository;
             this.idInstanceNeuronsRetriever = idInstanceNeuronsRetriever;
-            this.readNetworkCache = readNetworkCache;
+            this.readWriteCache = readWriteCache;
         }
 
+        /// <summary>
+        /// Gets Snapshots using the specified IDs.
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public async Task<IEnumerable<Snapshot>> GetByIds(IEnumerable<Guid> ids, CancellationToken token = default)
         {
             AssertionConcern.AssertArgumentNotNull(ids, nameof(ids));
@@ -55,13 +68,12 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence.Versioning
             queryResult.Network.ValidateIds(ids);
 
             idInstanceNeuronsRetriever.Initialize(ids);
-            var drs = (await neurULizer.DeneurULizeAsync<Snapshot>(
+            return await this.neurULizer.DeneurULizeCacheAsync<Snapshot>(
                 queryResult.Network,
-                idInstanceNeuronsRetriever,
+                this.idInstanceNeuronsRetriever,
+                this.readWriteCache[CacheKey.Read],
                 token
-            )).Where(dnr => dnr.Success);
-            readNetworkCache.AddReplaceItems(drs.Select(dr => dr.InstanceNeuron));
-            return drs.Select(nr => nr.Result);
+            );
         }
     }
 }

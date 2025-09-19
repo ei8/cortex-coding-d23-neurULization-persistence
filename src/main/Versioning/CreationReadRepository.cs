@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 
 namespace ei8.Cortex.Coding.d23.neurULization.Persistence.Versioning
 {
+    /// <summary>
+    /// Represents a Creation (read-only) Repository.
+    /// </summary>
     public class CreationReadRepository : ICreationReadRepository
     {
         private readonly IneurULizer neurULizer;
@@ -19,8 +22,18 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence.Versioning
         private readonly IGrannyService grannyService;
         private readonly IDictionary<string, IGranny> propertyAssociationCache;
         private readonly IClassInstanceNeuronsRetriever classInstanceNeuronsRetriever;
-        private readonly Network readNetworkCache;
+        private readonly INetworkDictionary<CacheKey> readWriteCache;
 
+        /// <summary>
+        /// Creates a Creation (read-only) Repository.
+        /// </summary>
+        /// <param name="neurULizer"></param>
+        /// <param name="networkRepository"></param>
+        /// <param name="mirrorRepository"></param>
+        /// <param name="grannyService"></param>
+        /// <param name="propertyAssociationCache"></param>
+        /// <param name="classInstanceNeuronsRetriever"></param>
+        /// <param name="readWriteCache"></param>
         public CreationReadRepository(
             IneurULizer neurULizer,
             INetworkRepository networkRepository,
@@ -28,7 +41,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence.Versioning
             IGrannyService grannyService,
             IDictionary<string, IGranny> propertyAssociationCache,
             IClassInstanceNeuronsRetriever classInstanceNeuronsRetriever,
-            Network readNetworkCache
+            INetworkDictionary<CacheKey> readWriteCache
         )
         {
             AssertionConcern.AssertArgumentNotNull(neurULizer, nameof(neurULizer));
@@ -37,7 +50,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence.Versioning
             AssertionConcern.AssertArgumentNotNull(grannyService, nameof(grannyService));
             AssertionConcern.AssertArgumentNotNull(propertyAssociationCache, nameof(propertyAssociationCache));
             AssertionConcern.AssertArgumentNotNull(classInstanceNeuronsRetriever, nameof(classInstanceNeuronsRetriever));
-            AssertionConcern.AssertArgumentNotNull(readNetworkCache, nameof(readNetworkCache));
+            AssertionConcern.AssertArgumentNotNull(readWriteCache, nameof(readWriteCache));
 
             this.neurULizer = neurULizer;
             this.networkRepository = networkRepository;
@@ -45,9 +58,15 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence.Versioning
             this.grannyService = grannyService;
             this.propertyAssociationCache = propertyAssociationCache;
             this.classInstanceNeuronsRetriever = classInstanceNeuronsRetriever;
-            this.readNetworkCache = readNetworkCache;
+            this.readWriteCache=readWriteCache;
         }
 
+        /// <summary>
+        /// Gets Creations using the specified Subject Id.
+        /// </summary>
+        /// <param name="subjectId"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public async Task<IEnumerable<Creation>> GetBySubjectId(Guid subjectId, CancellationToken token = default)
         {
             var result = Enumerable.Empty<Creation>();
@@ -64,26 +83,26 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence.Versioning
             );
 
             AssertionConcern.AssertStateTrue(
-                instantiatesCreationResult.Item1,
+                instantiatesCreationResult.Success,
                 $"'Instantiates^Creation' is required to invoke {nameof(GetBySubjectId)}"
             );
 
-            var hasSubjectIdResult = await grannyService.TryGetPropertyValueAssociationFromCacheOrDb<Creation>(
+            var hasSubjectIdResult = await grannyService.TryObtainPropertyValueAssociations<Creation>(
                 mirrorRepository,
                 networkRepository,
                 nameof(Creation.SubjectId),
-                subjectId,
+                new Guid[] { subjectId },
                 propertyAssociationCache
             );
 
-            if (hasSubjectIdResult.Success)
+            if (hasSubjectIdResult.Single().Success)
             {
                 var queryResult = await networkRepository.GetByQueryAsync(
                     new NeuronQuery()
                     {
                         Postsynaptic = new[] {
-                            instantiatesCreationResult.Item2.Neuron.Id.ToString(),
-                            hasSubjectIdResult.Granny.Neuron.Id.ToString()
+                            instantiatesCreationResult.Granny.Neuron.Id.ToString(),
+                            hasSubjectIdResult.Single().Granny.Neuron.Id.ToString()
                         },
                         SortBy = SortByValue.NeuronCreationTimestamp,
                         SortOrder = SortOrderValue.Descending,
@@ -98,17 +117,13 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence.Versioning
                         typeof(Creation)
                     )
                 );
-                var dnResult = await neurULizer.DeneurULizeAsync<Creation>(
+
+                result = await this.neurULizer.DeneurULizeCacheAsync<Creation>(
                     queryResult.Network,
-                    classInstanceNeuronsRetriever,
+                    this.classInstanceNeuronsRetriever,
+                    this.readWriteCache[CacheKey.Read],
                     token
                 );
-                result = dnResult.Select(dm => dm.Result);
-                dnResult
-                    .Where(dnr => dnr.Success)
-                    .ToList()
-                    .ForEach(dnr => readNetworkCache.AddReplace(dnr.InstanceNeuron)
-                    );
             }
 
             return result;

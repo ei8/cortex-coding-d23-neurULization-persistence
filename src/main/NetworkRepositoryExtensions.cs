@@ -8,7 +8,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
     public static class NetworkRepositoryExtensions
     {
         /// <summary>
-        /// Retrieves identical neurUL network from specified NetworkRepository based on specified tag and postsynaptic Ids.
+        /// Retrieves identical neurUL network from specified NetworkRepository based on specified tag and postsynaptic IDs.
         /// </summary>
         /// <param name="networkRepository"></param>
         /// <param name="tag"></param>
@@ -29,7 +29,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         )).Network;
 
         /// <summary>
-        /// Retrieves identical neurUL network from specified NetworkRepository based on specified presynaptic and postsynaptic neuron Ids.
+        /// Retrieves identical neurUL network from specified NetworkRepository based on specified presynaptic and postsynaptic neuron IDs.
         /// </summary>
         /// <param name="networkRepository"></param>
         /// <param name="presynapticNeuronId"></param>

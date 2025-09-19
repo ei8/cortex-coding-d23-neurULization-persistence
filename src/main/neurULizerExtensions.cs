@@ -2,8 +2,6 @@
 using ei8.Cortex.Coding.Reflection;
 using ei8.Cortex.Library.Common;
 using neurUL.Common.Domain.Model;
-using neurUL.Cortex.Domain.Model.Neurons;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -11,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace ei8.Cortex.Coding.d23.neurULization.Persistence
 {
+    /// <summary>
+    /// Represents neurULizer extension methods.
+    /// </summary>
     public static class neurULizerExtensions
     {
         /// <summary>
@@ -64,7 +65,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
                 options.TransactionData,
                 async (ct, cpis) => await options.NetworkRepository.GetPersistentIdenticalNeuron(ct, cpis),
                 async (pre, post) => await options.NetworkRepository.GetPersistentIdenticalNeuronTerminal(pre, post),
-                options.NetworkCache
+                options.UniquifyCache
             );
 
             return result;
@@ -111,6 +112,41 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             );
 
             return result;
+        }
+
+        /// <summary>
+        /// Persistence-aware DeneurULize. Retrieves mirrors, obtains required grannies, and caches
+        /// neurons in specified cache.
+        /// </summary>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="neurULizer"></param>
+        /// <param name="value"></param>
+        /// <param name="instanceNeuronsRetriever"></param>
+        /// <param name="readCache"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public async static Task<IEnumerable<TValue>> DeneurULizeCacheAsync<TValue>(
+            this IneurULizer neurULizer,
+            Network value,
+            IInstanceNeuronsRetriever instanceNeuronsRetriever,
+            Network readCache,
+            CancellationToken token = default
+        )
+            where TValue : class, new()
+        {
+            var dnResult = await neurULizer.DeneurULizeAsync<TValue>(
+                value,
+                instanceNeuronsRetriever,
+                token
+            );
+
+            dnResult
+                .Where(dnr => dnr.Success)
+                .ToList()
+                .ForEach(dnr => readCache.AddReplace(dnr.InstanceNeuron)
+                );
+
+            return dnResult.Select(dm => dm.Result);
         }
     }
 }

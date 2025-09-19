@@ -19,7 +19,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         public Task<IEnumerable<Neuron>> GetInstanceNeuronsAsync<TValue>(Network value, CancellationToken token = default) where TValue : class, new()
         {
             AssertionConcern.AssertArgumentNotNull(value, nameof(value));
-            AssertionConcern.AssertStateTrue(this.ids != null, "'Ids' need to be initialized prior to instance neurons retrieval.");
+            AssertionConcern.AssertStateTrue(this.ids != null, "'IDs' need to be initialized prior to instance neurons retrieval.");
 
             var result = ids.Select(
                 id => value.TryGetById(id, out Coding.Neuron instanceValueGrannyNeuron) ? 

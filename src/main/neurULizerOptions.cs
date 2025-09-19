@@ -3,12 +3,27 @@ using ei8.Cortex.Coding.d23.neurULization.Processors.Readers.Inductive;
 using ei8.Cortex.Coding.d23.neurULization.Processors.Writers;
 using ei8.Cortex.Coding.Persistence;
 using neurUL.Common.Domain.Model;
-using System.Collections.Generic;
 
 namespace ei8.Cortex.Coding.d23.neurULization.Persistence
 {
+    /// <summary>
+    /// Represens an option set for a d# neurULizer.
+    /// </summary>
     public class neurULizerOptions : Id23neurULizerOptions
     {
+        /// <summary>
+        /// Constructs a d# neurULizer option set.
+        /// </summary>
+        /// <param name="mirrorRepository"></param>
+        /// <param name="networkRepository"></param>
+        /// <param name="instanceWriter"></param>
+        /// <param name="inductiveInstanceReader"></param>
+        /// <param name="idInstanceValueWriter"></param>
+        /// <param name="inductiveInstanceValueReader"></param>
+        /// <param name="mirrors"></param>
+        /// <param name="uniquifyCache"></param>
+        /// <param name="grannyService"></param>
+        /// <param name="transactionData"></param>
         public neurULizerOptions(
             IMirrorRepository mirrorRepository,
             INetworkRepository networkRepository, 
@@ -17,7 +32,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             IIdInstanceValueWriter idInstanceValueWriter,
             IInstanceValueReader inductiveInstanceValueReader,
             IMirrorSet mirrors,
-            IDictionary<string, Network> networkCache,
+            INetworkDictionary<string> uniquifyCache,
             IGrannyService grannyService,
             INetworkTransactionData transactionData
         )
@@ -29,7 +44,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             AssertionConcern.AssertArgumentNotNull(idInstanceValueWriter, nameof(idInstanceValueWriter));
             AssertionConcern.AssertArgumentNotNull(inductiveInstanceValueReader, nameof(inductiveInstanceValueReader));
             AssertionConcern.AssertArgumentNotNull(mirrors, nameof(mirrors));
-            AssertionConcern.AssertArgumentNotNull(networkCache, nameof(networkCache));
+            AssertionConcern.AssertArgumentNotNull(uniquifyCache, nameof(uniquifyCache));
             AssertionConcern.AssertArgumentNotNull(grannyService, nameof(grannyService));
             AssertionConcern.AssertArgumentNotNull(transactionData, nameof(transactionData));
             
@@ -40,7 +55,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             this.IdInstanceValueWriter = idInstanceValueWriter;
             this.InductiveInstanceValueReader = inductiveInstanceValueReader;
             this.Mirrors = mirrors;
-            this.NetworkCache = networkCache;
+            this.UniquifyCache = uniquifyCache;
             this.GrannyService = grannyService;
             this.TransactionData = transactionData;
         }
@@ -52,7 +67,7 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         public IIdInstanceValueWriter IdInstanceValueWriter { get; }
         public IInstanceValueReader InductiveInstanceValueReader { get; }
         public IMirrorSet Mirrors { get; }
-        public IDictionary<string, Network> NetworkCache { get; }
+        public INetworkDictionary<string> UniquifyCache { get; }
         public IGrannyService GrannyService { get; }
         public INetworkTransactionData TransactionData { get; }
     }
