@@ -7,15 +7,31 @@ using System.Threading.Tasks;
 
 namespace ei8.Cortex.Coding.d23.neurULization.Persistence
 {
+    /// <summary>
+    /// Provides functionalities for InstanceNeuronsRetrievers that 
+    /// retrieve Id-based instances. 
+    /// </summary>
     public class IdInstanceNeuronsRetriever : IIdInstanceNeuronsRetriever
     {
         private IEnumerable<Guid> ids;
 
+        /// <summary>
+        /// Constructs an InstanceNeuronsRetriever that retrieves 
+        /// Id-based instances.
+        /// </summary>
         public IdInstanceNeuronsRetriever()
         {
             this.ids = null;
         }
 
+        /// <summary>
+        /// Gets Instance neurons.
+        /// </summary>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="value"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
         public Task<IEnumerable<Neuron>> GetInstanceNeuronsAsync<TValue>(Network value, CancellationToken token = default) where TValue : class, new()
         {
             AssertionConcern.AssertArgumentNotNull(value, nameof(value));
@@ -32,6 +48,10 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
             return Task.FromResult(result);
         }
 
+        /// <summary>
+        /// Initializes the retriever.
+        /// </summary>
+        /// <param name="value"></param>
         public void Initialize(IEnumerable<Guid> value)
         {
             this.ids = value;

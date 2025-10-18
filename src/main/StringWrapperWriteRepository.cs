@@ -1,24 +1,24 @@
 ﻿using ei8.Cortex.Coding.Persistence;
-using ei8.Cortex.Coding.Persistence.Versioning;
-using ei8.Cortex.Coding.Versioning;
+using ei8.Cortex.Coding.Persistence.Wrappers;
+using ei8.Cortex.Coding.Wrappers;
 using ei8.EventSourcing.Client;
 
-namespace ei8.Cortex.Coding.d23.neurULization.Persistence.Versioning
+namespace ei8.Cortex.Coding.d23.neurULization.Persistence
 {
     /// <summary>
-    /// Represents a Creation (write-only) Repository.
+    /// Represents a StringWrapper (write-only) repository.
     /// </summary>
-    public class CreationWriteRepository : 
-        WriteRepositoryBase<Creation>, 
-        ICreationWriteRepository
+    public class StringWrapperWriteRepository :
+        WriteRepositoryBase<StringWrapper>,
+        IStringWrapperWriteRepository
     {
         /// <summary>
-        /// Constructs a Creation (write-only) Repository.
+        /// Constructs a StringWrapper (write-only) repository.
         /// </summary>
         /// <param name="transaction"></param>
         /// <param name="networkTransactionService"></param>
         /// <param name="neurULizer"></param>
-        public CreationWriteRepository(
+        public StringWrapperWriteRepository(
             ITransaction transaction,
             INetworkTransactionService networkTransactionService,
             IneurULizer neurULizer

@@ -1,36 +1,41 @@
-﻿using ei8.Cortex.Coding.Persistence.Versioning;
+﻿using ei8.Cortex.Coding.d23.Grannies;
+using ei8.Cortex.Coding.Persistence.Versioning;
 using ei8.Cortex.Coding.Versioning;
-using ei8.Cortex.Library.Common;
+using neurUL.Common.Domain.Model;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace ei8.Cortex.Coding.d23.neurULization.Persistence.Versioning
 {
     /// <summary>
-    /// Represents a Snapshot (read-only) repository.
+    /// Represents a base class for an Operation (read-only) Repository.
     /// </summary>
-    public class SnapshotReadRepository : 
-        ClassReadRepositoryBase<Snapshot>, 
-        ISnapshotReadRepository
+    /// <typeparam name="T"></typeparam>
+    public class OperationReadRepositoryBase<T> :
+        ClassReadRepositoryBase<Creation>,
+        ICreationReadRepository
     {
+        private readonly IDictionary<string, IGranny> propertyAssociationCache;
+
         /// <summary>
-        /// Constructs a Snapshot (read-only) repository.
+        /// Constructs a base class for an Operation (read-only) Repository.
         /// </summary>
         /// <param name="networkRepository"></param>
         /// <param name="mirrorRepository"></param>
         /// <param name="neurULizer"></param>
         /// <param name="grannyService"></param>
         /// <param name="readWriteCache"></param>
+        /// <param name="propertyAssociationCache"></param>
         /// <param name="classInstanceNeuronsRetriever"></param>
-        public SnapshotReadRepository(
+        public OperationReadRepositoryBase(
             INetworkRepository networkRepository,
             IMirrorRepository mirrorRepository,
             IneurULizer neurULizer,
             IGrannyService grannyService,
             INetworkDictionary<CacheKey> readWriteCache,
+            IDictionary<string, IGranny> propertyAssociationCache,
             IClassInstanceNeuronsRetriever classInstanceNeuronsRetriever
         ) : base(
             networkRepository,
@@ -41,26 +46,25 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence.Versioning
             classInstanceNeuronsRetriever
         )
         {
+            AssertionConcern.AssertArgumentNotNull(propertyAssociationCache, nameof(propertyAssociationCache));
+
+            this.propertyAssociationCache = propertyAssociationCache;
         }
 
         /// <summary>
-        /// Gets Snapshots using the specified IDs.
+        /// Gets Creations using the specified Subject Id.
         /// </summary>
-        /// <param name="ids"></param>
+        /// <param name="subjectId"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<Snapshot>> GetByIds(
-            IEnumerable<Guid> ids, 
+        public async Task<IEnumerable<Creation>> GetBySubjectId(
+            Guid subjectId,
             CancellationToken token = default
-        ) => await this.GetByIdsCore(
-            ids,
-            (g) => new NeuronQuery()
-            {
-                Postsynaptic = new[] { g.ToString() },
-                Id = ids.Select(i => i.ToString()),
-                Depth = Coding.d23.neurULization.Constants.InstanceToValueInstantiatesClassDepth,
-                DirectionValues = DirectionValues.Outbound
-            },
+        ) => await base.GetByPropertyAssociationValueIdsCore(
+            new[] { subjectId },
+            this.propertyAssociationCache,
+            nameof(Creation.SubjectId),
+            nameof(CreationReadRepository.GetBySubjectId),
             false,
             token
         );

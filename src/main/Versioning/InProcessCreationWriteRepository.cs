@@ -6,8 +6,19 @@ using System;
 
 namespace ei8.Cortex.Coding.d23.neurULization.Persistence.Versioning
 {
+    /// <summary>
+    /// Represents an In-process Creation (write-only) Repository.
+    /// </summary>
     public class InProcessCreationWriteRepository : InProcessWriteRepositoryBase<Creation>, ICreationWriteRepository
     {
+        /// <summary>
+        /// Constructs an In-process Creation (write-only) Repository.
+        /// </summary>
+        /// <param name="mirrorRepository"></param>
+        /// <param name="transaction"></param>
+        /// <param name="networkTransactionData"></param>
+        /// <param name="networkTransactionService"></param>
+        /// <param name="neurULizer"></param>
         public InProcessCreationWriteRepository(
             IMirrorRepository mirrorRepository,
             ITransaction transaction,

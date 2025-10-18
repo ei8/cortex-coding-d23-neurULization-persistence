@@ -1,17 +1,24 @@
 ﻿using ei8.Cortex.Coding.Persistence;
 using ei8.Cortex.Coding.Persistence.Versioning;
-using ei8.Cortex.Coding.Reflection;
 using ei8.Cortex.Coding.Versioning;
 using ei8.EventSourcing.Client;
 using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace ei8.Cortex.Coding.d23.neurULization.Persistence.Versioning
 {
+    /// <summary>
+    /// Represents an In-process Snapshot (write-only) Repository.
+    /// </summary>
     public class InProcessSnapshotWriteRepository : InProcessWriteRepositoryBase<Snapshot>, ISnapshotWriteRepository
     {
+        /// <summary>
+        /// Constructs an In-process Snapshot (write-only) Repository.
+        /// </summary>
+        /// <param name="mirrorRepository"></param>
+        /// <param name="transaction"></param>
+        /// <param name="networkTransactionData"></param>
+        /// <param name="networkTransactionService"></param>
+        /// <param name="neurULizer"></param>
         public InProcessSnapshotWriteRepository(
             IMirrorRepository mirrorRepository,
             ITransaction transaction,
