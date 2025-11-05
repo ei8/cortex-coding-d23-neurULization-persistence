@@ -1,6 +1,6 @@
-﻿using ei8.Cortex.Coding.Persistence;
+﻿using ei8.Cortex.Coding.Model.Wrappers;
+using ei8.Cortex.Coding.Persistence;
 using ei8.Cortex.Coding.Persistence.Wrappers;
-using ei8.Cortex.Coding.Wrappers;
 using ei8.EventSourcing.Client;
 
 namespace ei8.Cortex.Coding.d23.neurULization.Persistence

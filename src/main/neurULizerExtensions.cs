@@ -1,5 +1,5 @@
-﻿using ei8.Cortex.Coding.Persistence;
-using ei8.Cortex.Coding.Reflection;
+﻿using ei8.Cortex.Coding.Model.Reflection;
+using ei8.Cortex.Coding.Persistence;
 using ei8.Cortex.Library.Common;
 using neurUL.Common.Domain.Model;
 using System.Collections.Generic;

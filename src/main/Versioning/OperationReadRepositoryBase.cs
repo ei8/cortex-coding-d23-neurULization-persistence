@@ -1,6 +1,6 @@
 ﻿using ei8.Cortex.Coding.d23.Grannies;
+using ei8.Cortex.Coding.Model.Versioning;
 using ei8.Cortex.Coding.Persistence.Versioning;
-using ei8.Cortex.Coding.Versioning;
 using neurUL.Common.Domain.Model;
 using System;
 using System.Collections.Generic;

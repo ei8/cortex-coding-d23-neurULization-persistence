@@ -1,5 +1,5 @@
-﻿using ei8.Cortex.Coding.Persistence.Wrappers;
-using ei8.Cortex.Coding.Wrappers;
+﻿using ei8.Cortex.Coding.Model.Wrappers;
+using ei8.Cortex.Coding.Persistence.Wrappers;
 using ei8.Cortex.Library.Common;
 using System;
 using System.Collections.Generic;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ei8.Cortex.Coding.Model.Reflection;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -12,9 +13,9 @@ namespace ei8.Cortex.Coding.d23.neurULization.Persistence
         {
             var result = value as string;
             if (value is MemberInfo)
-                result = MirrorConfig.ToKeyString((MemberInfo)value);
+                result = ((MemberInfo)value).ToKeyString();
             else if (value is Enum)
-                result = MirrorConfig.ToKeyString((Enum)value);
+                result = ((Enum)value).ToKeyString();
 
             return result;
         }

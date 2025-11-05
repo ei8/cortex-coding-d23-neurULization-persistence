@@ -1,6 +1,6 @@
-﻿using ei8.Cortex.Coding.Persistence;
+﻿using ei8.Cortex.Coding.Model.Versioning;
+using ei8.Cortex.Coding.Persistence;
 using ei8.Cortex.Coding.Persistence.Versioning;
-using ei8.Cortex.Coding.Versioning;
 using ei8.EventSourcing.Client;
 
 namespace ei8.Cortex.Coding.d23.neurULization.Persistence.Versioning

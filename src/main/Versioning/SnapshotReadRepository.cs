@@ -1,5 +1,5 @@
-﻿using ei8.Cortex.Coding.Persistence.Versioning;
-using ei8.Cortex.Coding.Versioning;
+﻿using ei8.Cortex.Coding.Model.Versioning;
+using ei8.Cortex.Coding.Persistence.Versioning;
 using ei8.Cortex.Library.Common;
 using System;
 using System.Collections.Generic;
