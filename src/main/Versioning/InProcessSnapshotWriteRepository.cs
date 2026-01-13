@@ -1,4 +1,5 @@
-﻿using ei8.Cortex.Coding.Model.Versioning;
+﻿using ei8.Cortex.Coding.Mirrors;
+using ei8.Cortex.Coding.Model.Versioning;
 using ei8.Cortex.Coding.Persistence;
 using ei8.Cortex.Coding.Persistence.Versioning;
 using ei8.EventSourcing.Client;
